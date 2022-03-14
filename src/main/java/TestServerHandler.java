@@ -1,9 +1,11 @@
+import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.socket.DatagramPacket;
 
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -18,9 +20,9 @@ public class TestServerHandler extends SimpleChannelInboundHandler<DatagramPacke
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, DatagramPacket packet) throws Exception {
-        String msg = packet.content().toString(Charset.forName("GBK"));
+        String msg = CodecUtil.deCode(packet.content());
         System.out.println(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()) + " UDP server receive：" + msg);
-        String json = "server reply\r\n";
+        String json = "server reply";
         byte[] bytes = json.getBytes(Charset.forName("GBK"));
         DatagramPacket data = new DatagramPacket(Unpooled.copiedBuffer(bytes), packet.sender());
         ctx.writeAndFlush(data);

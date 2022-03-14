@@ -1,4 +1,6 @@
 import io.netty.bootstrap.Bootstrap;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -8,6 +10,8 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.net.InetSocketAddress;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -28,7 +32,7 @@ public class TestUdpClient {
 
             for (int i = 0; i < 10; i++) {
                 ch.writeAndFlush(new DatagramPacket(
-                        Unpooled.copiedBuffer("test client", Charset.forName("GBK")),
+                        CodecUtil.encode("test client: " + new Date()),
                         new InetSocketAddress("127.0.0.1", 7397))).sync();
                 TimeUnit.SECONDS.sleep(1);
             }
