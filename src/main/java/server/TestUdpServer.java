@@ -16,6 +16,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class TestUdpServer {
 
+    public static int serverPort = 7397;
+
     public static void main(String[] args) throws InterruptedException {
         EventLoopGroup group = new NioEventLoopGroup();
         try {
@@ -27,8 +29,8 @@ public class TestUdpServer {
 //                    .option(ChannelOption.SO_SNDBUF, 1024 * 1024)
                     .handler(new TestServerChannelInitializer());
 
-            ChannelFuture f = b.bind(7397).sync();
-            log.info("udp server start done.");
+            ChannelFuture f = b.bind(serverPort).sync();
+            log.info("server start done.");
             f.channel().closeFuture().sync();
         } finally {
             //优雅的关闭释放内存

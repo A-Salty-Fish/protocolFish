@@ -1,13 +1,12 @@
 package server;
 
-import io.netty.buffer.Unpooled;
+import header.ShakeHandHeader;
+import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.socket.DatagramPacket;
-import util.CodecUtil;
+import lombok.extern.slf4j.Slf4j;
 
-import java.nio.charset.Charset;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /**
@@ -16,17 +15,27 @@ import java.util.Date;
  * @description: TODO
  * @date 2022/3/13 16:39
  */
-
+@Slf4j
 public class TestServerHandler extends SimpleChannelInboundHandler<DatagramPacket> {
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, DatagramPacket packet) throws Exception {
-        String msg = CodecUtil.deCode(packet.content());
-        System.out.println(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()) + " UDP server receive：" + msg);
-        String json = "server reply";
-        byte[] bytes = json.getBytes(Charset.forName("GBK"));
-        DatagramPacket data = new DatagramPacket(Unpooled.copiedBuffer(bytes), packet.sender());
-        ctx.writeAndFlush(data);
+        ByteBuf byteBuf = packet.content();
+        if (packet.content().getBoolean(0)) {
+            if (ShakeHandHeader.isShakeHandHeader(byteBuf)) {
+                log.info("shake hand success:" + new Date());
+                DatagramPacket data = new DatagramPacket(ShakeHandHeader.getShakeHandHeader(ctx.channel()), packet.sender());
+                ctx.writeAndFlush(data);
+            } else {
+                log.info("shake hand fail");
+            }
+        }
+//        String msg = CodecUtil.deCode(packet.content());
+//        log.info(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()) + " UDP server receive：" + msg);
+//        String json = "server reply";
+//        byte[] bytes = json.getBytes(Charset.forName("GBK"));
+//        DatagramPacket data = new DatagramPacket(Unpooled.copiedBuffer(bytes), packet.sender());
+//        ctx.writeAndFlush(data);
     }
 
 }
