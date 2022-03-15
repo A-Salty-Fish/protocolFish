@@ -1,6 +1,8 @@
 package server;
 
 import header.ShakeHandHeader;
+import header.handler.HeaderHandler;
+import header.handler.PlainHeaderHandler;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -20,22 +22,10 @@ public class TestServerHandler extends SimpleChannelInboundHandler<DatagramPacke
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, DatagramPacket packet) throws Exception {
-        ByteBuf byteBuf = packet.content();
-        if (packet.content().getBoolean(0)) {
-            if (ShakeHandHeader.isShakeHandHeader(byteBuf)) {
-                log.info("shake hand success:" + new Date());
-                DatagramPacket data = new DatagramPacket(ShakeHandHeader.getShakeHandHeader(ctx.channel()), packet.sender());
-                ctx.writeAndFlush(data);
-            } else {
-                log.info("shake hand fail");
-            }
+        HeaderHandler headerHandler = new PlainHeaderHandler();
+        while (headerHandler != null) {
+            headerHandler = headerHandler.getNextHeadHandler(ctx, packet);
         }
-//        String msg = CodecUtil.deCode(packet.content());
-//        log.info(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()) + " UDP server receive：" + msg);
-//        String json = "server reply";
-//        byte[] bytes = json.getBytes(Charset.forName("GBK"));
-//        DatagramPacket data = new DatagramPacket(Unpooled.copiedBuffer(bytes), packet.sender());
-//        ctx.writeAndFlush(data);
     }
 
 }

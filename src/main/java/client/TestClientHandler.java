@@ -1,6 +1,9 @@
 package client;
 
 import header.ShakeHandHeader;
+import header.handler.ExceptionHeaderHandler;
+import header.handler.HeaderHandler;
+import header.handler.PlainHeaderHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.socket.DatagramPacket;
@@ -24,9 +27,18 @@ public class TestClientHandler extends SimpleChannelInboundHandler<DatagramPacke
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, DatagramPacket packet) throws Exception {
-        if (ShakeHandHeader.isShakeHandHeader(packet.content())) {
-            log.info("shake hand success:" + new Date());
+        HeaderHandler headerHandler = new PlainHeaderHandler();
+        boolean hasException = false;
+        while (headerHandler != null) {
+            headerHandler = headerHandler.getNextHeadHandler(ctx, packet);
+            if (headerHandler instanceof ExceptionHeaderHandler) {
+                hasException = true;
+            }
+        }
+        if (!hasException) {
             shakeHand.set(true);
+        } else {
+            shakeHand.set(false);
         }
     }
 
