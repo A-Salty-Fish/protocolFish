@@ -48,6 +48,7 @@ public class TestUdpClient {
 
     public static void shakeHand(Channel ch) throws InterruptedException {
         ByteBuf buf = ShakeHandHeader.getShakeHandHeader(ch);
+        log.info(buf.toString());
         ch.writeAndFlush(new DatagramPacket(
                 buf,
                 new InetSocketAddress(serverHostName, serverPort))).sync();

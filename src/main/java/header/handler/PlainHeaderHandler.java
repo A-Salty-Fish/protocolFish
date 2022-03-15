@@ -1,5 +1,6 @@
 package header.handler;
 
+import header.ShakeHandHeader;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
@@ -23,7 +24,7 @@ public class PlainHeaderHandler implements HeaderHandler {
     @Override
     public HeaderHandler getNextHeadHandler(ChannelHandlerContext ctx, DatagramPacket packet) {
         ByteBuf byteBuffer = packet.content();
-        if (byteBuffer.getBoolean(0)) {
+        if (ShakeHandHeader.isShakeHandHeader(byteBuffer)) {
             handler(ctx, packet);
             return new ShakeHandHeaderHandler(isClient);
         } else {
@@ -33,6 +34,6 @@ public class PlainHeaderHandler implements HeaderHandler {
 
     @Override
     public void handler(ChannelHandlerContext ctx, DatagramPacket packet) {
-        packet.content().readBoolean();
+//        packet.content().readBoolean();
     }
 }

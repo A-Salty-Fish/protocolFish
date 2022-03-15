@@ -30,12 +30,9 @@ public class ShakeHandHeaderHandler implements HeaderHandler {
     @Override
     public HeaderHandler getNextHeadHandler(ChannelHandlerContext ctx, DatagramPacket packet) {
         ByteBuf byteBuffer = packet.content();
-        if (byteBuffer.readableBytes() != ShakeHandHeader.length - 1) {
-            return new ExceptionHeaderHandler("shake hand header length error");
+        if (!ShakeHandHeader.validShakeHandHeader(byteBuffer)) {
+            return new ExceptionHeaderHandler("shake hand header error");
         } else {
-            if (byteBuffer.readInt() != ShakeHandHeader.magicNum) {
-                return new ExceptionHeaderHandler("shake hand header magic num error");
-            }
             handler(ctx, packet);
         }
         return null;

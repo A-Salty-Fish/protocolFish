@@ -9,7 +9,9 @@ package header;
 
 public class PlainHeader {
     /**
-     * check if the request is for shaking hand
+     * first 1 bit : check if the request is for shaking hand
+     * middle remain 14 bits : reserved
+     * 17 bit left : magic number 11011111101010010
      */
-    public boolean isShakeHand;
+    public int label;
 }

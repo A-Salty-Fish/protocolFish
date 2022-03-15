@@ -14,12 +14,11 @@ public class ShakeHandHeader extends PlainHeader {
 
     public static int magicNum = 0x114514;
 
-    public static int length = 5;
+    public static int length = 4;
 
     public static ByteBuf getShakeHandHeader(Channel ch) {
-        ByteBuf byteBuf = ch.alloc().buffer(length);
-        byteBuf.writeBoolean(true);
-        byteBuf.writeInt(magicNum);
+        ByteBuf byteBuf = ch.alloc().buffer(length, length);
+        byteBuf.writeInt(magicNum | (1 << 31));
         return byteBuf;
     }
 
@@ -27,8 +26,17 @@ public class ShakeHandHeader extends PlainHeader {
         if (byteBuf.readableBytes() != length) {
             return false;
         }
-        boolean flag = byteBuf.readBoolean();
+        int magicNum = byteBuf.getInt(0);
+        return (magicNum & (1 << 31)) != 0;
+    }
+
+    public static boolean validShakeHandHeader(ByteBuf byteBuf) {
+        if (byteBuf.readableBytes() != length) {
+            return false;
+        }
         int magicNum = byteBuf.readInt();
-        return flag && (magicNum == ShakeHandHeader.magicNum);
+//        boolean isShakeHand = (magicNum & (1 << 31)) != 0;
+        magicNum = magicNum & ~(1 << 31);
+        return magicNum == ShakeHandHeader.magicNum;
     }
 }

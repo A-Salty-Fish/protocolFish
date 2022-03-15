@@ -1,8 +1,7 @@
 package server;
 
 import io.netty.bootstrap.Bootstrap;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.EventLoopGroup;
+import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioDatagramChannel;
 import lombok.extern.slf4j.Slf4j;
@@ -25,7 +24,7 @@ public class TestUdpServer {
             b.group(group)
                     .channel(NioDatagramChannel.class)
 //                    .option(ChannelOption.SO_BROADCAST, true)
-//                    .option(ChannelOption.SO_RCVBUF, 2048 * 1024)
+                    .option(ChannelOption.RCVBUF_ALLOCATOR, new AdaptiveRecvByteBufAllocator())
 //                    .option(ChannelOption.SO_SNDBUF, 1024 * 1024)
                     .handler(new TestServerChannelInitializer());
 
