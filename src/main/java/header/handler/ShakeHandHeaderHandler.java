@@ -13,7 +13,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * @author 13090
  * @version 1.0
- * @description: TODO
+ * @description: header handler for shake hand
  * @date 2022/3/15 15:23
  */
 @Slf4j

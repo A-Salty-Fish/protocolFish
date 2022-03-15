@@ -7,7 +7,7 @@ import io.netty.channel.socket.nio.NioDatagramChannel;
 /**
  * @author 13090
  * @version 1.0
- * @description: TODO
+ * @description: client channel initializer
  * @date 2022/3/13 16:43
  */
 

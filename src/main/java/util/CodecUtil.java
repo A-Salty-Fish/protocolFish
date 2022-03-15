@@ -9,7 +9,7 @@ import java.nio.charset.StandardCharsets;
 /**
  * @author 13090
  * @version 1.0
- * @description: TODO
+ * @description: encode and decode util
  * @date 2022/3/14 16:28
  */
 @Slf4j

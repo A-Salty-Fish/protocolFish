@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 /**
  * @author 13090
  * @version 1.0
- * @description: TODO
+ * @description: test message entity
  * @date 2022/3/15 16:19
  */
 @Data
