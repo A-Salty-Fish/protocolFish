@@ -14,12 +14,18 @@ import io.netty.channel.socket.DatagramPacket;
 
 public class PlainHeaderHandler implements HeaderHandler {
 
+    boolean isClient;
+
+    public PlainHeaderHandler(boolean isClient) {
+        this.isClient = isClient;
+    }
+
     @Override
     public HeaderHandler getNextHeadHandler(ChannelHandlerContext ctx, DatagramPacket packet) {
         ByteBuf byteBuffer = packet.content();
         if (byteBuffer.getBoolean(0)) {
             handler(ctx, packet);
-            return new ShakeHandHeaderHandler();
+            return new ShakeHandHeaderHandler(isClient);
         } else {
             return null;
         }

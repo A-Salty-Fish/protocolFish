@@ -19,6 +19,12 @@ import java.util.concurrent.ConcurrentHashMap;
 @Slf4j
 public class ShakeHandHeaderHandler implements HeaderHandler {
 
+    private boolean isClient;
+
+    public ShakeHandHeaderHandler(boolean isClient) {
+        this.isClient = isClient;
+    }
+
     static final ConcurrentHashMap<InetSocketAddress, Boolean> InetSocketAddresses = new ConcurrentHashMap<>();
 
     @Override
@@ -38,11 +44,13 @@ public class ShakeHandHeaderHandler implements HeaderHandler {
     @Override
     public void handler(ChannelHandlerContext ctx, DatagramPacket packet) {
         log.info(new Date() + ": shake hand success");
-        InetSocketAddress address = packet.sender();
-        if (!InetSocketAddresses.containsKey(address)) {
-            InetSocketAddresses.put(packet.sender(), true);
-            DatagramPacket data = new DatagramPacket(ShakeHandHeader.getShakeHandHeader(ctx.channel()), packet.sender());
-            ctx.writeAndFlush(data);
+        if (!isClient) {
+            InetSocketAddress address = packet.sender();
+            if (!InetSocketAddresses.containsKey(address)) {
+                InetSocketAddresses.put(packet.sender(), true);
+                DatagramPacket data = new DatagramPacket(ShakeHandHeader.getShakeHandHeader(ctx.channel()), packet.sender());
+                ctx.writeAndFlush(data);
+            }
         }
     }
 }

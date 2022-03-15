@@ -22,7 +22,7 @@ public class TestServerHandler extends SimpleChannelInboundHandler<DatagramPacke
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, DatagramPacket packet) throws Exception {
-        HeaderHandler headerHandler = new PlainHeaderHandler();
+        HeaderHandler headerHandler = new PlainHeaderHandler(false);
         while (headerHandler != null) {
             headerHandler = headerHandler.getNextHeadHandler(ctx, packet);
         }
