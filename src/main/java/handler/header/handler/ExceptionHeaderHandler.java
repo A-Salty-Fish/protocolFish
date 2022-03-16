@@ -1,7 +1,6 @@
-package header.handler;
+package handler.header.handler;
 
-import io.netty.buffer.ByteBuf;
-import io.netty.channel.Channel;
+import handler.RequestHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.socket.DatagramPacket;
 import lombok.extern.slf4j.Slf4j;
@@ -24,7 +23,7 @@ public class ExceptionHeaderHandler implements HeaderHandler {
     }
 
     @Override
-    public HeaderHandler getNextHeadHandler(ChannelHandlerContext ctx, DatagramPacket packet) {
+    public RequestHandler getNextHandler(ChannelHandlerContext ctx, DatagramPacket packet) {
         handler(ctx, packet);
         return null;
     }

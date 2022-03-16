@@ -1,25 +1,24 @@
-package body;
+package handler;
 
-import header.handler.HeaderHandler;
+import handler.header.handler.HeaderHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.socket.DatagramPacket;
 
 /**
  * @author 13090
  * @version 1.0
- * @description: body handler for request
- * @date 2022/3/15 14:23
+ * @description: TODO
+ * @date 2022/3/16 10:37
  */
 
-public interface BodyHandler {
-
+public interface RequestHandler {
     /**
-     * get next bodyHandler
+     * get next Handler
      * @param ctx
      * @param packet
      * @return
      */
-    public HeaderHandler getNextBodyHandler(ChannelHandlerContext ctx, DatagramPacket packet);
+    public RequestHandler getNextHandler(ChannelHandlerContext ctx, DatagramPacket packet);
 
     /**
      * handle body

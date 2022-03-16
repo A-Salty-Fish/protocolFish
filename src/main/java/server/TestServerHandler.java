@@ -1,15 +1,12 @@
 package server;
 
-import header.ShakeHandHeader;
-import header.handler.HeaderHandler;
-import header.handler.PlainHeaderHandler;
-import io.netty.buffer.ByteBuf;
+import handler.RequestHandler;
+import handler.header.handler.HeaderHandler;
+import handler.header.handler.PlainHeaderHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.socket.DatagramPacket;
 import lombok.extern.slf4j.Slf4j;
-
-import java.util.Date;
 
 /**
  * @author 13090
@@ -22,9 +19,9 @@ public class TestServerHandler extends SimpleChannelInboundHandler<DatagramPacke
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, DatagramPacket packet) throws Exception {
-        HeaderHandler headerHandler = new PlainHeaderHandler(false);
+        RequestHandler headerHandler = new PlainHeaderHandler(false);
         while (headerHandler != null) {
-            headerHandler = headerHandler.getNextHeadHandler(ctx, packet);
+            headerHandler = headerHandler.getNextHandler(ctx, packet);
         }
     }
 

@@ -1,17 +1,14 @@
 package client;
 
-import header.ShakeHandHeader;
-import header.handler.ExceptionHeaderHandler;
-import header.handler.HeaderHandler;
-import header.handler.PlainHeaderHandler;
+import handler.RequestHandler;
+import handler.header.handler.ExceptionHeaderHandler;
+import handler.header.handler.HeaderHandler;
+import handler.header.handler.PlainHeaderHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.socket.DatagramPacket;
 import lombok.extern.slf4j.Slf4j;
 
-import java.nio.charset.Charset;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -27,10 +24,10 @@ public class TestClientHandler extends SimpleChannelInboundHandler<DatagramPacke
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, DatagramPacket packet) throws Exception {
-        HeaderHandler headerHandler = new PlainHeaderHandler(true);
+        RequestHandler headerHandler = new PlainHeaderHandler(true);
         boolean hasException = false;
         while (headerHandler != null) {
-            headerHandler = headerHandler.getNextHeadHandler(ctx, packet);
+            headerHandler = headerHandler.getNextHandler(ctx, packet);
             if (headerHandler instanceof ExceptionHeaderHandler) {
                 hasException = true;
             }

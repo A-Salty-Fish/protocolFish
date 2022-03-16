@@ -1,6 +1,6 @@
 package client;
 
-import header.ShakeHandHeader;
+import handler.header.ShakeHandHeader;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.*;
@@ -8,11 +8,8 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.DatagramPacket;
 import io.netty.channel.socket.nio.NioDatagramChannel;
 import lombok.extern.slf4j.Slf4j;
-import util.CodecUtil;
 
 import java.net.InetSocketAddress;
-import java.util.Date;
-import java.util.concurrent.TimeUnit;
 
 /**
  * @author 13090
