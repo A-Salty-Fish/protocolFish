@@ -27,7 +27,7 @@ public class ShakeHandHeader extends PlainHeader {
             return false;
         }
         int magicNum = byteBuf.getInt(0);
-        return (magicNum & (1 << 31)) != 0;
+        return (magicNum & (1 << LabelPosition.IS_SHAKE_HAND_HEAD.value())) != 0;
     }
 
     public static boolean validShakeHandHeader(ByteBuf byteBuf) {
@@ -36,7 +36,7 @@ public class ShakeHandHeader extends PlainHeader {
         }
         int magicNum = byteBuf.readInt();
 //        boolean isShakeHand = (magicNum & (1 << 31)) != 0;
-        magicNum = magicNum & ~(1 << 31);
+        magicNum = magicNum & ~(1 << LabelPosition.IS_SHAKE_HAND_HEAD.value());
         return magicNum == ShakeHandHeader.magicNum;
     }
 }
