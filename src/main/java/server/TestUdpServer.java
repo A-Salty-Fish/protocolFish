@@ -6,6 +6,8 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioDatagramChannel;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.concurrent.TimeUnit;
+
 /**
  * @author 13090
  * @version 1.0
@@ -21,8 +23,11 @@ public class TestUdpServer {
         run();
     }
 
+    static EventLoopGroup group = new NioEventLoopGroup();
+
+    static ChannelFuture channelFuture;
+
     public static void run() throws InterruptedException {
-        EventLoopGroup group = new NioEventLoopGroup();
         try {
             Bootstrap b = new Bootstrap();
             b.group(group)
@@ -31,14 +36,20 @@ public class TestUdpServer {
                     .option(ChannelOption.RCVBUF_ALLOCATOR, new AdaptiveRecvByteBufAllocator())
 //                    .option(ChannelOption.SO_SNDBUF, 1024 * 1024)
                     .handler(new TestServerChannelInitializer());
-
-            ChannelFuture f = b.bind(serverPort).sync();
+            channelFuture = b.bind(serverPort).sync();
             log.info("server start done.");
-            f.channel().closeFuture().sync();
-        } finally {
-            //优雅的关闭释放内存
-            group.shutdownGracefully();
-            log.info("client shut down.");
+//            f.channel().closeFuture().sync();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+    }
+
+    public static void shutDown() throws InterruptedException {
+        TimeUnit.SECONDS.sleep(10);
+        group.shutdownGracefully().await();
+        group.shutdownNow();
+        channelFuture.channel().closeFuture().sync();
+        log.info("server shutdown done.");
+//        throw new RuntimeException("server shutdown done.");
     }
 }
