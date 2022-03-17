@@ -26,6 +26,11 @@ public class PlainHeader {
          * 1 bit: check if the request is plain body
          */
         IS_PLAIN_BODY_HEAD(30),
+
+        /**
+         * 1 bit: ack
+         */
+        IS_PLAIN_BODY_ACK(29),
         ;
 
         private int value = 0;
@@ -37,5 +42,5 @@ public class PlainHeader {
         public int value() {
             return this.value;
         }
-        }
+    }
 }

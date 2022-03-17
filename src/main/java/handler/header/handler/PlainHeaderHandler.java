@@ -28,7 +28,7 @@ public class PlainHeaderHandler implements HeaderHandler {
             handler(ctx, packet);
             return new ShakeHandHeaderHandler(isClient);
         } else {
-            return null;
+            return new PlainBodyHeaderHandler();
         }
     }
 

@@ -1,5 +1,6 @@
 package client;
 
+import handler.header.PlainBodyHeader;
 import handler.header.ShakeHandHeader;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
@@ -45,9 +46,11 @@ public class TestUdpClient {
 
     public static void shakeHand(Channel ch) throws InterruptedException {
         ByteBuf buf = ShakeHandHeader.getShakeHandHeader(ch);
-        log.info(buf.toString());
         ch.writeAndFlush(new DatagramPacket(
                 buf,
+                new InetSocketAddress(serverHostName, serverPort))).sync();
+        ch.writeAndFlush(new DatagramPacket(
+                PlainBodyHeader.getPlainBodyHeader(ch),
                 new InetSocketAddress(serverHostName, serverPort))).sync();
     }
 }

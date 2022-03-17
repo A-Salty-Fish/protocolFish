@@ -18,7 +18,7 @@ public class ShakeHandHeader extends PlainHeader {
 
     public static ByteBuf getShakeHandHeader(Channel ch) {
         ByteBuf byteBuf = ch.alloc().buffer(length, length);
-        byteBuf.writeInt(magicNum | (1 << 31));
+        byteBuf.writeInt(magicNum | (1 << LabelPosition.IS_SHAKE_HAND_HEAD.value()));
         return byteBuf;
     }
 
