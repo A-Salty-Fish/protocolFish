@@ -18,6 +18,10 @@ public class TestUdpServer {
     public static int serverPort = 7397;
 
     public static void main(String[] args) throws InterruptedException {
+        run();
+    }
+
+    public static void run() throws InterruptedException {
         EventLoopGroup group = new NioEventLoopGroup();
         try {
             Bootstrap b = new Bootstrap();
@@ -34,8 +38,7 @@ public class TestUdpServer {
         } finally {
             //优雅的关闭释放内存
             group.shutdownGracefully();
+            log.info("client shut down.");
         }
-
     }
-
 }

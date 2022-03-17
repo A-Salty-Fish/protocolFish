@@ -27,30 +27,47 @@ public class TestUdpClient {
 
     public static int clientPort = 7398;
 
-    public static void main(String[] args) {
-        EventLoopGroup group = new NioEventLoopGroup();
+    static EventLoopGroup group = new NioEventLoopGroup();
+
+    static Channel channel;
+
+    public static void main(String[] args) throws InterruptedException {
+        run();
+        for (int i = 0; i < 10; i++) {
+            shakeHand();
+        }
+//        shutDown();
+    }
+
+    public static void run() throws InterruptedException {
         try {
             Bootstrap b = new Bootstrap();
             b.group(group).channel(NioDatagramChannel.class)
                     .handler(new TestClientChannelInitializer());
-            Channel ch = b.bind(clientPort).sync().channel();
+            channel = b.bind(clientPort).await().channel();
             log.info("client start down.");
-            shakeHand(ch);
-            ch.closeFuture().await();
         } catch (Exception e) {
             e.printStackTrace();
-        } finally {
-            group.shutdownGracefully();
         }
     }
 
-    public static void shakeHand(Channel ch) throws InterruptedException {
-        ByteBuf buf = ShakeHandHeader.getShakeHandHeader(ch);
-        ch.writeAndFlush(new DatagramPacket(
-                buf,
+    public static void shutDown() {
+        channel.close();
+        group.shutdownGracefully();
+        log.info("client shut down.");
+    }
+
+    public static void sendPlainBody() throws InterruptedException {
+        channel.writeAndFlush(new DatagramPacket(
+                PlainBodyHeader.getPlainBodyHeader(channel),
                 new InetSocketAddress(serverHostName, serverPort))).sync();
-        ch.writeAndFlush(new DatagramPacket(
-                PlainBodyHeader.getPlainBodyHeader(ch),
+    }
+
+    public static void shakeHand() throws InterruptedException {
+        log.info("client shake hand.");
+        ByteBuf buf = ShakeHandHeader.getShakeHandHeader(channel);
+        channel.writeAndFlush(new DatagramPacket(
+                buf,
                 new InetSocketAddress(serverHostName, serverPort))).sync();
     }
 }
