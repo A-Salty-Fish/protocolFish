@@ -18,15 +18,15 @@ public class TestEntity {
 
     private String name2;
 
-    public Long longNum;
+    public long longNum;
 
     public Long longNum2;
 
-    public Integer intNum;
+    public int intNum;
 
     public Integer intNum2;
 
-    public Double doubleNum;
+    public double doubleNum;
 
     public Double doubleNum2;
 
