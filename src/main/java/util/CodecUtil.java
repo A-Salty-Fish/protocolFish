@@ -41,20 +41,11 @@ public class CodecUtil {
     }
 
     public int encodeConstantLengthField(Object obj, Field field, List<Byte> bytes, int offset) throws IllegalAccessException {
-        int index = offset / 8;
-        bytes.add((byte) 0);
-        int bitOffset = offset % 8;
-        Byte curByte = bytes.get(index);
-        int addBits = 0;
-        int fieldLength = getConstantLengthFieldSize(field);
-        if (fieldLength == 1) {
-
-            addBits += 8;
-        }
-        return addBits;
+        byte[] addBytes = getBytes(obj, field);
+        return appendOffsetBytes(addBytes, offset, bytes) + appendValueBytes(addBytes, offset, bytes);
     }
 
-    public void appendBytes(byte[] addBytes, int offset, List<Byte> bytes) {
+    public int appendValueBytes(byte[] addBytes, int offset, List<Byte> bytes) {
         int index = offset / 8;
         int bitOffset = offset % 8;
         for (byte addByte: addBytes) {
@@ -71,6 +62,12 @@ public class CodecUtil {
                 bytes.set(index, nextByte);
             }
         }
+        return 8 * addBytes.length;
+    }
+
+    public int appendOffsetBytes(byte[] addBytes, int offset, List<Byte> bytes) {
+        // todo: get length offset
+        return 0;
     }
 
     public int encodeVariableLengthField(Object obj, Field field, List<Byte> bytes, int offset) throws IllegalAccessException {
@@ -181,7 +178,23 @@ public class CodecUtil {
             long epochMilli = value.getLong(ChronoField.INSTANT_SECONDS);
             return new byte[]{(byte) (epochMilli >> 56), (byte) (epochMilli >> 48), (byte) (epochMilli >> 40), (byte) (epochMilli >> 32), (byte) (epochMilli >> 24), (byte) (epochMilli >> 16), (byte) (epochMilli >> 8), (byte) epochMilli};
         }
-        return null;
+        return new byte[0];
+    }
+
+    public int getOffsetLength(Field field) {
+        int length = getConstantLengthFieldSize(field);
+        switch (length) {
+            case 1:
+                return 0;
+            case 2:
+                return 1;
+            case 4:
+                return 2;
+            case 8:
+                return 3;
+            default:
+                return -1;
+        }
     }
 
     public static enum FieldType {
