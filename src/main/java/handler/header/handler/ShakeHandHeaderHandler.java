@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.net.InetSocketAddress;
 import java.util.Date;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -21,8 +22,6 @@ import java.util.concurrent.atomic.AtomicLong;
 @Slf4j
 public class ShakeHandHeaderHandler implements HeaderHandler {
 
-    static AtomicLong atomicLong = new AtomicLong(0L);
-
     private boolean isClient;
 
     public ShakeHandHeaderHandler(boolean isClient) {
@@ -30,6 +29,8 @@ public class ShakeHandHeaderHandler implements HeaderHandler {
     }
 
     static final ConcurrentHashMap<InetSocketAddress, Boolean> InetSocketAddresses = new ConcurrentHashMap<>();
+
+    static AtomicBoolean isShakeHand = new AtomicBoolean(false);
 
     @Override
     public RequestHandler getNextHandler(ChannelHandlerContext ctx, DatagramPacket packet) {
@@ -51,10 +52,11 @@ public class ShakeHandHeaderHandler implements HeaderHandler {
                 InetSocketAddresses.put(packet.sender(), true);
                 DatagramPacket data = new DatagramPacket(ShakeHandHeader.getShakeHandHeader(ctx.channel()), packet.sender());
                 ctx.writeAndFlush(data);
+                log.info(new Date() + ":server shake hand success");
             }
-            atomicLong.incrementAndGet();
-            log.info(new Date() + ":shake hand success, total count: " + atomicLong.get());
+        } else {
+            isShakeHand.set(true);
+            log.info(new Date() + ":client shake hand success");
         }
-
     }
 }
