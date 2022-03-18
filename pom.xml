@@ -46,6 +46,37 @@
             <version>1.33</version>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>com.google.protobuf</groupId>
+            <artifactId>protobuf-java</artifactId>
+            <version>3.19.1</version>
+        </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+        <plugin>
+            <groupId>org.xolstice.maven.plugins</groupId>
+            <artifactId>protobuf-maven-plugin</artifactId>
+            <version>0.6.1</version>
+
+            <configuration><!-- proto文件目录 -->
+                <protoSourceRoot>src/main/resources/proto</protoSourceRoot>
+                <!-- 生成的Java文件目录 -->
+                <outputDirectory>${project.basedir}/src/resources/proto</outputDirectory>
+                <clearOutputDirectory>false</clearOutputDirectory>
+                <!--<outputDirectory>${project.build.directory}/generated-sources/protobuf</outputDirectory>-->
+            </configuration>
+            <executions>
+                <execution>
+                    <goals>
+                        <goal>compile</goal>
+                        <goal>test-compile</goal>
+                    </goals>
+                </execution>
+            </executions>
+        </plugin>
+        </plugins>
+    </build>
 
 </project>

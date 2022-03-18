@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package protocol;
+
+option go_package = "protocol";
+option java_package = "proto";
+
+message TestEntity {
+  string name = 1;
+  string name2 = 2;
+  int64 longNum = 3;
+  int64 longNum2 = 4;
+  int32 intNum = 5;
+  int32 intNum2 = 6;
+  double doubleNum = 7;
+  double doubleNum2 = 8;
+  int64 localDate = 9;
+  int64 localDateTime = 10;
+}

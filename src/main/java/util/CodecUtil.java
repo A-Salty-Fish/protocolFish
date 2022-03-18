@@ -71,12 +71,6 @@ public class CodecUtil {
         log.info("register enity class: {}", clazz.getName());
         constantLengthFieldMap.get(clazz).sort(Comparator.comparing(Field::getName));
         variableLengthFieldMap.get(clazz).sort(Comparator.comparing(Field::getName));
-//        for (Field field : constantLengthFieldMap.get(clazz)) {
-//            log.info("register constant length field:{}", field.getName());
-//        }
-//        for (Field field : variableLengthFieldMap.get(clazz)) {
-//            log.info("register variable length field:{}", field.getName());
-//        }
     }
 
     public static FieldType getFieldType(Field field) {
