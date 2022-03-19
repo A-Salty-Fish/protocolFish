@@ -73,10 +73,8 @@ public class CodecUtil {
             byte addByte = addBytes[i];
             bytes.add((byte) 0);
             Byte curByte = bytes.get(index);
-            curByte = (byte) (curByte | (addByte >> (bitOffset)));
+            curByte = (byte) (curByte | ((addByte & 0xff) >> (bitOffset)));
             bytes.set(index, curByte);
-            bitOffset += 8;
-            bitOffset %= 8;
             index++;
             if (bitOffset != 0) {
                 Byte nextByte = bytes.get(index);

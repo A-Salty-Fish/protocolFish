@@ -56,8 +56,7 @@ public class CodeCTest {
             offset = CodecUtil.encodeConstantLengthField(entity, entity.getClass().getField("intNum2"), bytes, offset);
             System.out.println(Arrays.toString(bytes.toArray()));
 //            01000010 00111010 00110101 11000111
-//            01000010 00111010 00110111 11000111
-//            01000010 00111010 00111111 11000111
+//            01000010 00111010 00110101 11000111
             bytes.forEach(x -> System.out.println(byteToString(x)));
         } catch (Exception e) {
             e.printStackTrace();
