@@ -1,6 +1,8 @@
 package util;
 
 import demo.TestEntity;
+import org.junit.Assert;
+import org.junit.Test;
 import proto.TestEntityOuterClass;
 
 import java.time.LocalDate;
@@ -20,17 +22,30 @@ import java.util.Random;
 public class CodeCTest {
 
     public static void main(String[] args) throws IllegalAccessException {
-        CodecUtil.registerClass(TestEntity.class);
-        long protoLength = 0;
-        long testLength = 0;
-        for (int i = 0; i < 10000; i++) {
-            TestEntity testEntity = getRandomTestEntity();
-            testLength += new CodecUtil("").encode(testEntity).length;
-            protoLength += getProtocolEntityFromTestEntity(testEntity).toByteArray().length;
-        }
-        System.out.println("testLength:" + testLength);
-        System.out.println("protoLength:" + protoLength);
-        System.out.println("testLength/protoLength: " + (double) testLength / protoLength);
+//        CodecUtil.registerClass(TestEntity.class);
+//        long protoLength = 0;
+//        long testLength = 0;
+//        for (int i = 0; i < 10000; i++) {
+//            TestEntity testEntity = getRandomTestEntity();
+//            testLength += new CodecUtil("").encode(testEntity).length;
+//            protoLength += getProtocolEntityFromTestEntity(testEntity).toByteArray().length;
+//        }
+//        System.out.println("testLength:" + testLength);
+//        System.out.println("protoLength:" + protoLength);
+//        System.out.println("testLength/protoLength: " + (double) testLength / protoLength);
+    }
+
+    @Test
+    public void testGetLengthFromHead() throws Exception{
+        Assert.assertEquals(new CodecUtil("").getLengthFromHead(new byte[]{(byte) 192}, 2, 0), 3);
+        Assert.assertEquals(new CodecUtil("").getLengthFromHead(new byte[]{(byte) 0}, 2, 0), 0);
+        Assert.assertEquals(new CodecUtil("").getLengthFromHead(new byte[]{(byte) 192}, 2, 1), 2);
+        Assert.assertEquals(new CodecUtil("").getLengthFromHead(new byte[]{(byte) 224}, 2, 1), 3);
+        Assert.assertEquals(new CodecUtil("").getLengthFromHead(new byte[]{(byte) 224}, 2, 2), 2);
+        Assert.assertEquals(new CodecUtil("").getLengthFromHead(new byte[]{(byte) 224}, 3, 0), 7);
+        Assert.assertEquals(new CodecUtil("").getLengthFromHead(new byte[]{(byte) 64}, 2, 0), 1);
+        Assert.assertEquals(new CodecUtil("").getLengthFromHead(new byte[]{(byte) 1, (byte) 128}, 2, 7), 3);
+        Assert.assertEquals(new CodecUtil("").getLengthFromHead(new byte[]{(byte) 3, (byte) 128}, 3, 6), 7);
     }
 
     public static TestEntityOuterClass.TestEntity getProtocolEntity() {

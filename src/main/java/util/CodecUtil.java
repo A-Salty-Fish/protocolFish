@@ -7,7 +7,6 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.time.temporal.ChronoField;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -28,12 +27,27 @@ public class CodecUtil {
 
     ProtocolConfig protocolConfig;
 
+    /**
+     * for server pipeline
+     *
+     * @param clientKey
+     */
     public CodecUtil(String clientKey) {
         this.clientKey = clientKey;
         protocolConfig = ServerStoreConfig.get(clientKey);
         if (protocolConfig == null) {
             protocolConfig = ProtocolConfig.defaultConfig();
         }
+    }
+
+    /**
+     * for client
+     *
+     * @param protocolConfig
+     */
+    public CodecUtil(ProtocolConfig protocolConfig) {
+        this.protocolConfig = protocolConfig;
+        this.clientKey = null;
     }
 
     public Byte[] encode(Object obj) throws IllegalAccessException {
@@ -281,4 +295,58 @@ public class CodecUtil {
         NULLABLE_VARIABLE_LENGTH
     }
 
+    public <T> T decode(byte[] bytes, Class<T> clazz) throws Exception {
+        List<Field> constantLengthFields = constantLengthFieldMap.get(clazz);
+        List<Field> variableLengthFields = variableLengthFieldMap.get(clazz);
+        int offset = 0;
+        T result = clazz.newInstance();
+        for (Field field : constantLengthFields) {
+
+        }
+        return result;
+    }
+
+    public int decodeBytes(byte[] bytes, Field field, int offset) {
+        int headLength = getConstantHeadLength(field);
+        return 0;
+    }
+
+    public int getLengthFromHead(byte[] bytes, int headLength, int offset) {
+        int bitOffset = offset % 8;
+        int index = offset / 8;
+        if (bitOffset + headLength > 8) {
+            byte curByte = bytes[index];
+            byte nextByte = bytes[index + 1];
+            int curHeadLength = 8 - bitOffset;
+            int nextHeadLength = headLength - curHeadLength;
+            curByte = (byte) (curByte & getMask(curHeadLength));
+            nextByte = (byte) ((nextByte >> (8 - nextHeadLength)) & getMask(nextHeadLength));
+            return (curByte << nextHeadLength) | nextByte;
+        } else {
+            byte curByte = bytes[index];
+            return (((curByte << bitOffset) >> (8 - headLength)) & getMask(headLength));
+        }
+    }
+
+    public static byte getMask(int length) {
+        if (length == 1) {
+            return 0x01;
+        } else if (length == 2) {
+            return 0x03;
+        } else if (length == 3) {
+            return 0x07;
+        } else if (length == 4) {
+            return 0x0F;
+        } else if (length == 5) {
+            return 0x1F;
+        } else if (length == 6) {
+            return 0x3F;
+        } else if (length == 7) {
+            return 0x7F;
+        } else if (length == 8) {
+            return (byte) 0xFF;
+        } else {
+            return 0;
+        }
+    }
 }
