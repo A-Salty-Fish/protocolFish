@@ -308,7 +308,12 @@ public class CodecUtil {
 
     public int decodeBytes(byte[] bytes, Field field, int offset) {
         int headLength = getConstantHeadLength(field);
-        return 0;
+        int valueLength = getLengthFromHead(bytes, offset, headLength);
+        offset += headLength;
+        for (int i = 0; i < valueLength; i++) {
+
+        }
+        return headLength + valueLength * 8;
     }
 
     public int getLengthFromHead(byte[] bytes, int headLength, int offset) {
@@ -328,6 +333,24 @@ public class CodecUtil {
         }
     }
 
+    public byte[] getValueBytes(byte[] bytes, int offset, int valueLength) {
+        byte[] result = new byte[valueLength];
+        int index = offset / 8;
+        int bitOffset = offset % 8;
+        if (bitOffset == 0) {
+            for (int i = 0; i < valueLength; i++) {
+                result[i] = bytes[index + i];
+            }
+        } else {
+            for (int i = 0; i < valueLength; i++) {
+                byte curByte = bytes[index];
+                byte nextByte = bytes[index + 1];
+                result[i] = (byte) ((curByte << bitOffset) | ((nextByte >> (8 - bitOffset)) & getMask(bitOffset)));
+            }
+        }
+        return result;
+    }
+
     public static byte getMask(int length) {
         if (length == 1) {
             return 0x01;
@@ -344,7 +367,7 @@ public class CodecUtil {
         } else if (length == 7) {
             return 0x7F;
         } else if (length == 8) {
-            return (byte) 0xFF;
+            return -1;
         } else {
             return 0;
         }

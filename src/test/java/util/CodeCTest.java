@@ -142,4 +142,14 @@ public class CodeCTest {
         }
         return sb.reverse().toString();
     }
+
+    @Test
+    public void testGetValueBytes() throws Exception {
+        CodecUtil codecUtil = new CodecUtil("");
+//        System.out.println(Arrays.toString(codecUtil.getValueBytes(new byte[]{(byte) (0)}, 0, 1)));
+//        System.out.println(Arrays.toString(codecUtil.getValueBytes(new byte[]{(byte) (0), (byte) 1}, 0, 2)));
+        System.out.println(Arrays.toString(codecUtil.getValueBytes(new byte[]{(byte) (128), (byte) 128}, 1, 1)));
+        System.out.println(Arrays.toString(codecUtil.getValueBytes(new byte[]{(byte) (192), (byte) 128}, 1, 1)));
+        System.out.println(Arrays.toString(codecUtil.getValueBytes(new byte[]{(byte) (128), (byte) 128}, 2, 1)));
+    }
 }
