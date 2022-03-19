@@ -62,7 +62,7 @@ public class EncodeBenchmark {
 
     @Benchmark
     public void test(Blackhole bh) throws IllegalAccessException {
-        bh.consume(CodecUtil.encode(entity));
+        bh.consume(new CodecUtil(" ").encode(entity));
     }
 
     public static TestEntityOuterClass.TestEntity getProtocolEntityFromTestEntity(TestEntity testEntity) {

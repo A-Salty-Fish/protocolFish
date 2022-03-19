@@ -25,7 +25,7 @@ public class CodeCTest {
         long testLength = 0;
         for (int i = 0; i < 10000; i++) {
             TestEntity testEntity = getRandomTestEntity();
-            testLength += CodecUtil.encode(testEntity).length;
+            testLength += new CodecUtil("").encode(testEntity).length;
             protoLength += getProtocolEntityFromTestEntity(testEntity).toByteArray().length;
         }
         System.out.println("testLength:" + testLength);
@@ -97,7 +97,7 @@ public class CodeCTest {
     public static byte[] testGetBytes() {
         TestEntity entity = getEntity();
         try {
-            return CodecUtil.getBytes(entity, entity.getClass().getField("intNum"));
+            return new CodecUtil("").getBytes(entity, entity.getClass().getField("intNum"));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -108,9 +108,9 @@ public class CodeCTest {
         TestEntity entity = getEntity();
         try {
             List<Byte> bytes = new ArrayList<>();
-            int offset = (CodecUtil.encodeConstantLengthField(entity, entity.getClass().getField("intNum"), bytes,
+            int offset = (new CodecUtil("").encodeConstantLengthField(entity, entity.getClass().getField("intNum"), bytes,
                     0));
-            offset = CodecUtil.encodeConstantLengthField(entity, entity.getClass().getField("intNum2"), bytes, offset);
+            offset = new CodecUtil("").encodeConstantLengthField(entity, entity.getClass().getField("intNum2"), bytes, offset);
             System.out.println(Arrays.toString(bytes.toArray()));
 //            01000010 00111010 00110101 11000111
 //            01000010 00111010 00110101 11000111

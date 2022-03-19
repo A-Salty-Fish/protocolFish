@@ -19,9 +19,14 @@ public class ProtocolConfig {
     private Boolean enableDoubleCompression;
 
     /**
-     * constrain the max size of string args
+     * The number of decimal places to round to when converting to and from
      */
-    private Boolean stringHeadLength;
+    private Byte doubleCompressionAccuracy;
+
+    /**
+     * constrain the head length for string arg
+     */
+    private Byte stringHeadLength;
 
     /**
      * use time compression without lose

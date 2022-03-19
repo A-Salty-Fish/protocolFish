@@ -24,7 +24,13 @@ import static util.CodecUtil.FieldType.*;
 @Slf4j
 public class CodecUtil {
 
-    public static Byte[] encode(Object obj) throws IllegalAccessException {
+    String clientKey;
+
+    public CodecUtil(String clientKey) {
+        this.clientKey = clientKey;
+    }
+
+    public Byte[] encode(Object obj) throws IllegalAccessException {
         List<Field> constantLengthFields = constantLengthFieldMap.get(obj.getClass());
         List<Field> variableLengthFields = variableLengthFieldMap.get(obj.getClass());
         List<Byte> bytes = new ArrayList<>(constantLengthFields.size() * 4 + variableLengthFields.size() * 4);
@@ -40,14 +46,14 @@ public class CodecUtil {
         return bytes.toArray(new Byte[0]);
     }
 
-    public static int encodeConstantLengthField(Object obj, Field field, List<Byte> bytes, int offset) throws IllegalAccessException {
+    public int encodeConstantLengthField(Object obj, Field field, List<Byte> bytes, int offset) throws IllegalAccessException {
         byte[] addBytes = getBytes(obj, field);
         int constantValueBytesNum = getConstantValueBytesNum(addBytes);
         int headLength = getConstantHeadLength(field);
         return appendConstantBytes(addBytes, offset, bytes, constantValueBytesNum, headLength);
     }
 
-    public static int appendConstantBytes(byte[] addBytes, int offset, List<Byte> bytes, int constantValueBytesNum, int headLength) {
+    public int appendConstantBytes(byte[] addBytes, int offset, List<Byte> bytes, int constantValueBytesNum, int headLength) {
         int index = offset / 8;
         int bitOffset = offset % 8;
         if (headLength > 0) {
@@ -85,7 +91,7 @@ public class CodecUtil {
         return 8 * constantValueBytesNum + headLength;
     }
 
-    public static int getConstantHeadLength(Field field) {
+    public int getConstantHeadLength(Field field) {
         int length = getConstantLengthFieldByteLength(field);
         switch (length) {
             case 1:
@@ -101,7 +107,7 @@ public class CodecUtil {
         }
     }
 
-    public static int getConstantValueBytesNum(byte[] addBytes) {
+    public int getConstantValueBytesNum(byte[] addBytes) {
         if (addBytes.length == 1) {
             return 1;
         } else if (addBytes.length == 2) {
@@ -132,14 +138,14 @@ public class CodecUtil {
         }
     }
 
-    public static int encodeVariableLengthField(Object obj, Field field, List<Byte> bytes, int offset) throws IllegalAccessException {
+    public int encodeVariableLengthField(Object obj, Field field, List<Byte> bytes, int offset) throws IllegalAccessException {
         byte[] addBytes = getBytes(obj, field);
         return appendVariableBytes(addBytes, offset, bytes);
     }
 
     final static int VARIABLE_HEAD_LENGTH = 16;
 
-    public static int appendVariableBytes(byte[] addBytes, int offset, List<Byte> bytes) {
+    public int appendVariableBytes(byte[] addBytes, int offset, List<Byte> bytes) {
         int addBytesNum = addBytes.length;
         Byte headByte1 = (byte) (addBytesNum >> 8);
         Byte headByte2 = (byte) (addBytesNum & 0xff);
@@ -192,7 +198,7 @@ public class CodecUtil {
         return VARIABLE_LENGTH;
     }
 
-    public static int getConstantLengthFieldByteLength(Field field) {
+    public int getConstantLengthFieldByteLength(Field field) {
         Class<?> fieldType = field.getType();
         if (fieldType.equals(byte.class) || fieldType.equals(Byte.class)) {
             return 1;
@@ -215,7 +221,7 @@ public class CodecUtil {
         return -1;
     }
 
-    public static byte[] getBytes(Object obj, Field field) throws IllegalAccessException {
+    public byte[] getBytes(Object obj, Field field) throws IllegalAccessException {
         Class<?> fieldType = field.getType();
         if (fieldType.equals(byte.class) || fieldType.equals(Byte.class)) {
             return new byte[]{(byte) field.get(obj)};
