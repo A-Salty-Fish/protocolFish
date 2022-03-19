@@ -36,7 +36,7 @@ public class CodeCTest {
     }
 
     @Test
-    public void testGetLengthFromHead() throws Exception{
+    public void testGetLengthFromHead() throws Exception {
         Assert.assertEquals(new CodecUtil("").getLengthFromHead(new byte[]{(byte) 192}, 2, 0), 3);
         Assert.assertEquals(new CodecUtil("").getLengthFromHead(new byte[]{(byte) 0}, 2, 0), 0);
         Assert.assertEquals(new CodecUtil("").getLengthFromHead(new byte[]{(byte) 192}, 2, 1), 2);
@@ -152,4 +152,25 @@ public class CodeCTest {
         System.out.println(Arrays.toString(codecUtil.getValueBytes(new byte[]{(byte) (192), (byte) 128}, 1, 1)));
         System.out.println(Arrays.toString(codecUtil.getValueBytes(new byte[]{(byte) (128), (byte) 128}, 2, 1)));
     }
+
+    @Test
+    public void testConvertBytesToObjectIntegerAndLong() throws Exception {
+        CodecUtil codecUtil = new CodecUtil("");
+        Assert.assertEquals(codecUtil.convertBytesToObject(new byte[]{(byte) (0x11)}, TestEntity.class.getDeclaredField("intNum")), 17);
+        Assert.assertEquals(codecUtil.convertBytesToObject(new byte[]{(byte) (0x11), (byte) (0x11)}, TestEntity.class.getDeclaredField("intNum")), ((0x11) << (8)) + (0x11));
+        Assert.assertEquals(codecUtil.convertBytesToObject(new byte[]{(byte) (0x11), (byte) (0x11), (byte) (0x11)}, TestEntity.class.getDeclaredField("intNum")), ((0x11) << (16)) + ((0x11) << 8) + (0x11));
+        Assert.assertEquals(codecUtil.convertBytesToObject(new byte[]{(byte) (0x11), (byte) (0x11), (byte) (0x11), (byte) (0x11)}, TestEntity.class.getDeclaredField("intNum")), ((0x11) << 24) + ((0x11) << 16) + ((0x11) << 8) + (0x11));
+
+        Assert.assertEquals(codecUtil.convertBytesToObject(new byte[]{(byte) (0x11)}, TestEntity.class.getDeclaredField("longNum")), (long) 17);
+        Assert.assertEquals(codecUtil.convertBytesToObject(new byte[]{(byte) (0x11), (byte) (0x11)}, TestEntity.class.getDeclaredField("longNum")), (long) ((0x11) << (8)) + (0x11));
+        Assert.assertEquals(codecUtil.convertBytesToObject(new byte[]{(byte) (0x11), (byte) (0x11), (byte) (0x11)}, TestEntity.class.getDeclaredField("longNum")), (long) ((0x11) << (16)) + ((0x11) << 8) + (0x11));
+        Assert.assertEquals(codecUtil.convertBytesToObject(new byte[]{(byte) (0x11), (byte) (0x11), (byte) (0x11), (byte) (0x11)}, TestEntity.class.getDeclaredField("longNum")), (long) ((0x11) << 24) + ((0x11) << 16) + ((0x11) << 8) + (0x11));
+        Assert.assertEquals(codecUtil.convertBytesToObject(new byte[]{(byte) (0x11), (byte) (0x11), (byte) (0x11), (byte) (0x11), (byte) (0x11)}, TestEntity.class.getDeclaredField("longNum")), ((long) 0x11 << 32) + (long) ((0x11) << 24) + ((0x11) << 16) + ((0x11) << 8) + (0x11));
+        Assert.assertEquals(codecUtil.convertBytesToObject(new byte[]{(byte) (0x11), (byte) (0x11), (byte) (0x11), (byte) (0x11), (byte) (0x11), (byte) (0x11)}, TestEntity.class.getDeclaredField("longNum")), ((long) 0x11 << 40) + ((long) 0x11 << 32) + (long) ((0x11) << 24) + ((0x11) << 16) + ((0x11) << 8) + (0x11));
+        Assert.assertEquals(codecUtil.convertBytesToObject(new byte[]{(byte) (0x11), (byte) (0x11), (byte) (0x11), (byte) (0x11), (byte) (0x11), (byte) (0x11), (byte) (0x11)}, TestEntity.class.getDeclaredField("longNum")), ((long) 0x11 << 48) + ((long) 0x11 << 40) + ((long) 0x11 << 32) + (long) ((0x11) << 24) + ((0x11) << 16) + ((0x11) << 8) + (0x11));
+        Assert.assertEquals(codecUtil.convertBytesToObject(new byte[]{(byte) (0x11), (byte) (0x11), (byte) (0x11), (byte) (0x11), (byte) (0x11), (byte) (0x11), (byte) (0x11), (byte) (0x11)}, TestEntity.class.getDeclaredField("longNum")), ((long) 0x11 << 56) + ((long) 0x11 << 48) + ((long) 0x11 << 40) + ((long) 0x11 << 32) + (long) ((0x11) << 24) + ((0x11) << 16) + ((0x11) << 8) + (0x11));
+//        System.out.println());
+    }
+
+
 }
