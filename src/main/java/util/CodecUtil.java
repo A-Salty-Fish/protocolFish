@@ -3,8 +3,10 @@ package util;
 import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.Field;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.time.temporal.ChronoField;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -24,7 +26,7 @@ public class CodecUtil {
 
     public final static int MAGIC_NUM = 0x114514;
 
-    public Byte[] encode(Object obj) throws IllegalAccessException {
+    public static Byte[] encode(Object obj) throws IllegalAccessException {
         List<Field> constantLengthFields = constantLengthFieldMap.get(obj.getClass());
         List<Field> variableLengthFields = variableLengthFieldMap.get(obj.getClass());
         List<Byte> bytes = new ArrayList<>(constantLengthFields.size() * 4 + variableLengthFields.size() * 4);
@@ -132,8 +134,23 @@ public class CodecUtil {
         }
     }
 
-    public int encodeVariableLengthField(Object obj, Field field, List<Byte> bytes, int offset) throws IllegalAccessException {
-        return 0;
+    public static int encodeVariableLengthField(Object obj, Field field, List<Byte> bytes, int offset) throws IllegalAccessException {
+        byte[] addBytes = getBytes(obj, field);
+        return appendVariableBytes(addBytes, offset, bytes);
+    }
+
+    final static int VARIABLE_HEAD_LENGTH = 16;
+
+    public static int appendVariableBytes(byte[] addBytes, int offset, List<Byte> bytes) {
+        int addBytesNum = addBytes.length;
+        Byte headByte1 = (byte) (addBytesNum >> 8);
+        Byte headByte2 = (byte) (addBytesNum & 0xff);
+        bytes.add(headByte1);
+        bytes.add(headByte2);
+        for (byte addByte : addBytes) {
+            bytes.add(addByte);
+        }
+        return addBytes.length * 8 + VARIABLE_HEAD_LENGTH;
     }
 
     private static final ConcurrentHashMap<Class<?>, List<Field>> constantLengthFieldMap = new ConcurrentHashMap<>();
@@ -232,13 +249,17 @@ public class CodecUtil {
         }
         if (fieldType.equals(LocalDateTime.class)) {
             LocalDateTime value = (LocalDateTime) field.get(obj);
-            long epochMilli = value.getLong(ChronoField.INSTANT_SECONDS);
+            long epochMilli = value.toInstant(ZoneOffset.of("+8")).toEpochMilli();
             return new byte[]{(byte) (epochMilli >> 56), (byte) (epochMilli >> 48), (byte) (epochMilli >> 40), (byte) (epochMilli >> 32), (byte) (epochMilli >> 24), (byte) (epochMilli >> 16), (byte) (epochMilli >> 8), (byte) epochMilli};
         }
         if (fieldType.equals(LocalDate.class)) {
             LocalDate value = (LocalDate) field.get(obj);
-            long epochMilli = value.getLong(ChronoField.INSTANT_SECONDS);
+            long epochMilli = value.atStartOfDay(ZoneOffset.ofHours(8)).toInstant().toEpochMilli();
             return new byte[]{(byte) (epochMilli >> 56), (byte) (epochMilli >> 48), (byte) (epochMilli >> 40), (byte) (epochMilli >> 32), (byte) (epochMilli >> 24), (byte) (epochMilli >> 16), (byte) (epochMilli >> 8), (byte) epochMilli};
+        }
+        if (fieldType.equals(String.class)) {
+            String value = (String) field.get(obj);
+            return value.getBytes(StandardCharsets.UTF_8);
         }
         return new byte[0];
     }
