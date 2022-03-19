@@ -26,8 +26,14 @@ public class CodecUtil {
 
     String clientKey;
 
+    ProtocolConfig protocolConfig;
+
     public CodecUtil(String clientKey) {
         this.clientKey = clientKey;
+        protocolConfig = ServerStoreConfig.get(clientKey);
+        if (protocolConfig == null) {
+            protocolConfig = ProtocolConfig.defaultConfig();
+        }
     }
 
     public Byte[] encode(Object obj) throws IllegalAccessException {

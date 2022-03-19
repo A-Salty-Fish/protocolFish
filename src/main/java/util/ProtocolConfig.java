@@ -10,7 +10,7 @@ import lombok.Data;
  * @date 2022/3/19 17:06
  */
 @Data
-@Builder(setterPrefix = "set")
+@Builder
 public class ProtocolConfig {
 
     /**
@@ -37,5 +37,15 @@ public class ProtocolConfig {
      * for the time compression, the base time line
      */
     private Long timeCompressionBaseline;
+
+    public static ProtocolConfig defaultConfig() {
+        return ProtocolConfig.builder()
+                .enableDoubleCompression(false)
+                .doubleCompressionAccuracy((byte) 3)
+                .stringHeadLength((byte) 2)
+                .enableTimeCompression(false)
+                .timeCompressionBaseline(0L)
+                .build();
+    }
 
 }
