@@ -40,29 +40,30 @@ public class CodecUtil {
         return bytes.toArray(new Byte[0]);
     }
 
-    public int encodeConstantLengthField(Object obj, Field field, List<Byte> bytes, int offset) throws IllegalAccessException {
+    public static int encodeConstantLengthField(Object obj, Field field, List<Byte> bytes, int offset) throws IllegalAccessException {
         byte[] addBytes = getBytes(obj, field);
         int constantValueBytesNum = getConstantValueBytesNum(addBytes);
         int headLength = getConstantHeadLength(field);
         return appendConstantBytes(addBytes, offset, bytes, constantValueBytesNum, headLength);
     }
 
-    public int appendConstantBytes(byte[] addBytes, int offset, List<Byte> bytes, int constantValueBytesNum, int headLength) {
+    public static int appendConstantBytes(byte[] addBytes, int offset, List<Byte> bytes, int constantValueBytesNum, int headLength) {
         int index = offset / 8;
         int bitOffset = offset % 8;
         if (headLength > 0) {
+            int writeConstantValueBytesNum = constantValueBytesNum - 1;
             if (bitOffset == 0) {
-                bytes.add((byte) (constantValueBytesNum << (8 - headLength)));
+                bytes.add((byte) (writeConstantValueBytesNum << (8 - headLength)));
             } else {
+                Byte curByte = bytes.get(index);
                 if (bitOffset + headLength > 8) {
-                    Byte curByte = bytes.get(index);
                     bytes.add((byte) 0);
                     Byte nextByte = bytes.get(index + 1);
-                    bytes.set(index, (byte) (curByte | (constantValueBytesNum >> (bitOffset + headLength - 8))));
-                    bytes.set(index + 1, (byte) (nextByte | (constantValueBytesNum << (8 - bitOffset))));
+                    bytes.set(index, (byte) (curByte | (writeConstantValueBytesNum >> (bitOffset + headLength - 8))));
+                    bytes.set(index + 1, (byte) (nextByte | (writeConstantValueBytesNum << (16 - (bitOffset + headLength)))));
+                    index++;
                 } else {
-                    Byte curByte = bytes.get(index);
-                    bytes.set(index, (byte) (curByte | (constantValueBytesNum << (8 - bitOffset - headLength))));
+                    bytes.set(index, (byte) (curByte | (writeConstantValueBytesNum << (8 - bitOffset - headLength))));
                 }
             }
             bitOffset += headLength;
@@ -72,7 +73,7 @@ public class CodecUtil {
             byte addByte = addBytes[i];
             bytes.add((byte) 0);
             Byte curByte = bytes.get(index);
-            curByte = (byte) (curByte | (addByte >> bitOffset));
+            curByte = (byte) (curByte | (addByte >> (bitOffset)));
             bytes.set(index, curByte);
             bitOffset += 8;
             bitOffset %= 8;
@@ -86,7 +87,7 @@ public class CodecUtil {
         return 8 * constantValueBytesNum + headLength;
     }
 
-    public int getConstantHeadLength(Field field) {
+    public static int getConstantHeadLength(Field field) {
         int length = getConstantLengthFieldByteLength(field);
         switch (length) {
             case 1:
@@ -102,7 +103,7 @@ public class CodecUtil {
         }
     }
 
-    public int getConstantValueBytesNum(byte[] addBytes) {
+    public static int getConstantValueBytesNum(byte[] addBytes) {
         if (addBytes.length == 1) {
             return 1;
         } else if (addBytes.length == 2) {

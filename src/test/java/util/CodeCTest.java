@@ -5,7 +5,9 @@ import demo.TestEntity;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * @author 13090
@@ -17,9 +19,7 @@ import java.util.Arrays;
 public class CodeCTest {
 
     public static void main(String[] args) {
-        CodecUtil.registerClass(TestEntity.class);
-        byte[] bytes = testGetBytes();
-        System.out.println(Arrays.toString(bytes));
+        testGetBytes2();
     }
 
     public static TestEntity getEntity() {
@@ -45,5 +45,30 @@ public class CodeCTest {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public static void testGetBytes2() {
+        TestEntity entity = getEntity();
+        try {
+            List<Byte> bytes = new ArrayList<>();
+            int offset = (CodecUtil.encodeConstantLengthField(entity, entity.getClass().getField("intNum"), bytes,
+                    0));
+            offset = CodecUtil.encodeConstantLengthField(entity, entity.getClass().getField("intNum2"), bytes, offset);
+            System.out.println(Arrays.toString(bytes.toArray()));
+//            01000010 00111010 00110101 11000111
+//            01000010 00111010 00110111 11000111
+//            01000010 00111010 00111111 11000111
+            bytes.forEach(x -> System.out.println(byteToString(x)));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static String byteToString(byte b) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < 8; i++) {
+            sb.append((b >> i) & 1);
+        }
+        return sb.reverse().toString();
     }
 }
