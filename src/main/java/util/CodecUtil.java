@@ -3,10 +3,9 @@ package util;
 import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.Field;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
+import java.time.*;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -301,18 +300,17 @@ public class CodecUtil {
         int offset = 0;
         T result = clazz.newInstance();
         for (Field field : constantLengthFields) {
-
+            offset += decodeBytes(bytes, field, offset, result);
         }
         return result;
     }
 
-    public int decodeBytes(byte[] bytes, Field field, int offset) {
+    public int decodeBytes(byte[] bytes, Field field, int offset, Object obj) throws Exception {
         int headLength = getConstantHeadLength(field);
         int valueLength = getLengthFromHead(bytes, offset, headLength);
         offset += headLength;
-        for (int i = 0; i < valueLength; i++) {
-
-        }
+        byte[] valueBytes = getValueBytes(bytes, offset, valueLength);
+        field.set(obj, convertBytesToObject(valueBytes, field));
         return headLength + valueLength * 8;
     }
 
@@ -349,6 +347,129 @@ public class CodecUtil {
             }
         }
         return result;
+    }
+
+    public Object convertBytesToObject(byte[] bytes, Field field) throws Exception {
+        Class<?> fieldType = field.getType();
+        if (fieldType.equals(byte.class) || fieldType.equals(Byte.class)) {
+            return bytes[0];
+        } else if (fieldType.equals(short.class) || fieldType.equals(Short.class)) {
+            if (bytes.length == 1) {
+                return (short) bytes[0];
+            } else if (bytes.length == 2) {
+                return (short) ((bytes[0] << 8) | bytes[1]);
+            } else {
+                return null;
+            }
+//            return ByteBuffer.wrap(bytes).getShort();
+        } else if (fieldType.equals(char.class) || fieldType.equals(Character.class)) {
+            if (bytes.length == 1) {
+                return (char) bytes[0];
+            } else if (bytes.length == 2) {
+                return (char) ((bytes[0] << 8) | bytes[1]);
+            } else {
+                return null;
+            }
+//            return ByteBuffer.wrap(bytes).getChar();
+        } else if (fieldType.equals(int.class) || fieldType.equals(Integer.class)) {
+            if (bytes.length == 1) {
+                return (int) bytes[0];
+            } else if (bytes.length == 2) {
+                return (int) (bytes[1] << 8 | bytes[0]);
+            } else if (bytes.length == 3) {
+                return (int) (bytes[2] << 16 | bytes[1] << 8 | bytes[0]);
+            } else if (bytes.length == 4) {
+                return (int) (bytes[3] << 24 | bytes[2] << 16 | bytes[1] << 8 | bytes[0]);
+            } else {
+                return null;
+            }
+//            return ByteBuffer.wrap(bytes).getInt();
+        } else if (fieldType.equals(long.class) || fieldType.equals(Long.class)) {
+            if (bytes.length == 1) {
+                return (long) bytes[0];
+            } else if (bytes.length == 2) {
+                return (long) bytes[1] << 8 | (long) bytes[0];
+            } else if (bytes.length == 3) {
+                return (long) bytes[2] << 16 | (long) bytes[1] << 8 | (long) bytes[0];
+            } else if (bytes.length == 4) {
+                return (long) bytes[3] << 24 | (long) bytes[2] << 16 | (long) bytes[1] << 8 | (long) bytes[0];
+            } else if (bytes.length == 5) {
+                return (long) bytes[4] << 32 | (long) bytes[3] << 24 | (long) bytes[2] << 16 | (long) bytes[1] << 8 | (long) bytes[0];
+            } else if (bytes.length == 6) {
+                return (long) bytes[5] << 40 | (long) bytes[4] << 32 | (long) bytes[3] << 24 | (long) bytes[2] << 16 | (long) bytes[1] << 8 | (long) bytes[0];
+            } else if (bytes.length == 7) {
+                return (long) bytes[6] << 48 | (long) bytes[5] << 40 | (long) bytes[4] << 32 | (long) bytes[3] << 24 | (long) bytes[2] << 16 | (long) bytes[1] << 8 | (long) bytes[0];
+            } else if (bytes.length == 8) {
+                return (long) bytes[7] << 56 | (long) bytes[6] << 48 | (long) bytes[5] << 40 | (long) bytes[4] << 32 | (long) bytes[3] << 24 | (long) bytes[2] << 16 | (long) bytes[1] << 8 | (long) bytes[0];
+            } else {
+                return null;
+            }
+//            return ByteBuffer.wrap(bytes).getLong();
+        } else if (fieldType.equals(float.class) || fieldType.equals(Float.class)) {
+            byte[] wholeBytes = new byte[4];
+            if (bytes.length == 4) {
+                return ByteBuffer.wrap(bytes).getFloat();
+            } else if (bytes.length == 3) {
+                wholeBytes[0] = 0;
+                wholeBytes[1] = bytes[0];
+                wholeBytes[2] = bytes[1];
+                wholeBytes[3] = bytes[2];
+                return ByteBuffer.wrap(wholeBytes).getFloat();
+            } else if (bytes.length == 2) {
+                wholeBytes[0] = 0;
+                wholeBytes[1] = 0;
+                wholeBytes[2] = bytes[0];
+                wholeBytes[3] = bytes[1];
+                return ByteBuffer.wrap(wholeBytes).getFloat();
+            } else if (bytes.length == 1) {
+                wholeBytes[0] = 0;
+                wholeBytes[1] = 0;
+                wholeBytes[2] = 0;
+                wholeBytes[3] = bytes[0];
+                return ByteBuffer.wrap(wholeBytes).getFloat();
+            }
+            return null;
+        } else if (fieldType.equals(double.class) || fieldType.equals(Double.class)) {
+            byte[] wholeBytes = new byte[8];
+            int wholeBytesIndex = 7;
+            int bytesIndex = bytes.length - 1;
+            while (bytesIndex >= 0) {
+                wholeBytes[wholeBytesIndex--] = bytes[bytesIndex--];
+            }
+//            if (bytes.length == 8) {
+//                return ByteBuffer.wrap(bytes).getDouble();
+//            } else if (bytes.length == 7) {
+//                wholeBytes[0] = 0;
+//                for (int i = 0; i < 7; i++) {
+//                    wholeBytes[i + 1] = bytes[i];
+//                }
+//                return ByteBuffer.wrap(wholeBytes).getDouble();
+//            }
+            return ByteBuffer.wrap(wholeBytes).getDouble();
+        } else if (fieldType.equals(boolean.class) || fieldType.equals(Boolean.class)) {
+            return bytes[0] != 0;
+        } else if (fieldType.equals(LocalDateTime.class)) {
+            byte[] wholeBytes = new byte[8];
+            int wholeBytesIndex = 7;
+            int bytesIndex = bytes.length - 1;
+            while (bytesIndex >= 0) {
+                wholeBytes[wholeBytesIndex--] = bytes[bytesIndex--];
+            }
+            long time = ByteBuffer.wrap(wholeBytes).getLong();
+            return LocalDateTime.ofInstant(Instant.ofEpochMilli(time), ZoneId.systemDefault());
+        } else if (fieldType.equals(LocalDate.class)) {
+            byte[] wholeBytes = new byte[8];
+            int wholeBytesIndex = 7;
+            int bytesIndex = bytes.length - 1;
+            while (bytesIndex >= 0) {
+                wholeBytes[wholeBytesIndex--] = bytes[bytesIndex--];
+            }
+            long time = ByteBuffer.wrap(wholeBytes).getLong();
+            return LocalDateTime.ofInstant(Instant.ofEpochMilli(time), ZoneId.systemDefault()).toLocalDate();
+        } else if (fieldType.equals(String.class)) {
+            return new String(bytes, StandardCharsets.UTF_8);
+        }
+        return null;
     }
 
     public static byte getMask(int length) {
