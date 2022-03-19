@@ -24,8 +24,6 @@ import static util.CodecUtil.FieldType.*;
 @Slf4j
 public class CodecUtil {
 
-    public final static int MAGIC_NUM = 0x114514;
-
     public static Byte[] encode(Object obj) throws IllegalAccessException {
         List<Field> constantLengthFields = constantLengthFieldMap.get(obj.getClass());
         List<Field> variableLengthFields = variableLengthFieldMap.get(obj.getClass());
