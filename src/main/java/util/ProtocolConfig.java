@@ -3,6 +3,9 @@ package util;
 import lombok.Builder;
 import lombok.Data;
 
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+
 /**
  * @author 13090
  * @version 1.0
@@ -38,6 +41,16 @@ public class ProtocolConfig {
      */
     private Long timeCompressionBaseline;
 
+    /**
+     * the head length for the string
+     */
+    private int variableHeadByteLength;
+
+    /**
+     * the charset for the string
+     */
+    private Charset charset;
+
     public static ProtocolConfig defaultConfig() {
         return ProtocolConfig.builder()
                 .enableDoubleCompression(false)
@@ -45,6 +58,8 @@ public class ProtocolConfig {
                 .stringHeadLength((byte) 2)
                 .enableTimeCompression(false)
                 .timeCompressionBaseline(0L)
+                .variableHeadByteLength(2)
+                .charset(StandardCharsets.UTF_8)
                 .build();
     }
 

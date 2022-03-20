@@ -27,10 +27,6 @@ public class CodecUtil {
 
     ProtocolConfig protocolConfig;
 
-    int variableHeadByteLength = 2;
-
-    Charset charset = StandardCharsets.UTF_8;
-
     /**
      * for server pipeline
      *
@@ -182,8 +178,8 @@ public class CodecUtil {
     public int appendVariableBytes(byte[] addBytes, int offset, List<Byte> bytes) {
         int addBytesNum = addBytes.length;
 //        byte[] headBytes = new byte[variableHeadByteLength];
-        for (int i = 0; i < variableHeadByteLength; i++) {
-            bytes.add((byte) ((addBytesNum >> (8 * (variableHeadByteLength - i - 1))) & 0xff));
+        for (int i = 0; i < protocolConfig.getVariableHeadByteLength(); i++) {
+            bytes.add((byte) ((addBytesNum >> (8 * (protocolConfig.getVariableHeadByteLength() - i - 1))) & 0xff));
         }
 //        Byte headByte1 = (byte) (addBytesNum >> 8);
 //        Byte headByte2 = (byte) (addBytesNum & 0xff);
@@ -192,7 +188,7 @@ public class CodecUtil {
         for (byte addByte : addBytes) {
             bytes.add(addByte);
         }
-        return addBytes.length * 8 + variableHeadByteLength * 8;
+        return addBytes.length * 8 + protocolConfig.getVariableHeadByteLength() * 8;
     }
 
     private static final ConcurrentHashMap<Class<?>, List<Field>> constantLengthFieldMap = new ConcurrentHashMap<>();
@@ -301,7 +297,7 @@ public class CodecUtil {
         }
         if (fieldType.equals(String.class)) {
             String value = (String) field.get(obj);
-            return value.getBytes(charset);
+            return value.getBytes(protocolConfig.getCharset());
         }
         return new byte[0];
     }
@@ -333,13 +329,13 @@ public class CodecUtil {
         if (offset % 8 != 0) {
             curOffset += 8 - (offset % 8);
         }
-        curOffset += variableHeadByteLength * 8;
+        curOffset += protocolConfig.getVariableHeadByteLength() * 8;
         int curIndex = curOffset / 8;
         byte[] stringBytes = new byte[byteLength];
         for (int i = 0; i < byteLength; i++) {
             stringBytes[i] = bytes[curIndex + i];
         }
-        field.set(obj, new String(stringBytes, charset));
+        field.set(obj, new String(stringBytes, protocolConfig.getCharset()));
         curOffset += byteLength * 8;
         return curOffset - offset;
     }
@@ -506,7 +502,7 @@ public class CodecUtil {
             long time = ByteBuffer.wrap(wholeBytes).getLong();
             return LocalDateTime.ofInstant(Instant.ofEpochMilli(time), ZoneId.systemDefault()).toLocalDate();
         } else if (fieldType.equals(String.class)) {
-            return new String(bytes, charset);
+            return new String(bytes, protocolConfig.getCharset());
         }
         return null;
     }
@@ -539,7 +535,7 @@ public class CodecUtil {
         }
         int index = offset / 8;
         int length = 0;
-        for (int i = index; i < index + variableHeadByteLength; i++) {
+        for (int i = index; i < index + protocolConfig.getVariableHeadByteLength(); i++) {
             length <<= 8;
             length |= bytes[i] & 0xFF;
         }
