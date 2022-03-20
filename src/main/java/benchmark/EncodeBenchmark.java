@@ -1,6 +1,7 @@
 package benchmark;
 
 import client.TestUdpClient;
+import com.google.protobuf.InvalidProtocolBufferException;
 import demo.TestEntity;
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.infra.Blackhole;
@@ -32,23 +33,42 @@ public class EncodeBenchmark {
 
     TestEntityOuterClass.TestEntity protoEntity;
 
+    byte[] bytes;
+
+    byte[] protoBytes;
+
+    CodecUtil codecUtil;
+
     @Setup(Level.Trial)
-    public void init() throws InterruptedException {
+    public void init() throws Exception {
         CodecUtil.registerClass(TestEntity.class);
         entity = TestEntity.getRandomTestEntity();
         protoEntity = getProtocolEntityFromTestEntity(entity);
+        bytes = new CodecUtil("").encode(entity);
+        protoBytes = protoEntity.toByteArray();
+        codecUtil = new CodecUtil(" ");
     }
 
 
 
     @Benchmark
-    public void proto(Blackhole bh) {
+    public void protobufEncode(Blackhole bh) {
         bh.consume(protoEntity.toByteArray());
     }
 
     @Benchmark
-    public void test(Blackhole bh) throws IllegalAccessException {
-        bh.consume(new CodecUtil(" ").encode(entity));
+    public void myEncode(Blackhole bh) throws IllegalAccessException {
+        bh.consume(codecUtil.encode(entity));
+    }
+
+    @Benchmark
+    public void protobufDecode(Blackhole bh) throws InvalidProtocolBufferException {
+        bh.consume(TestEntityOuterClass.TestEntity.parseFrom(protoBytes));
+    }
+
+    @Benchmark
+    public void myDecode(Blackhole bh) throws Exception {
+        bh.consume(codecUtil.decode(bytes, TestEntity.class));
     }
 
     public static TestEntityOuterClass.TestEntity getProtocolEntityFromTestEntity(TestEntity testEntity) {
