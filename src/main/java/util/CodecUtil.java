@@ -435,7 +435,7 @@ public class CodecUtil {
             } else {
                 return null;
             }
-            return ByteBuffer.wrap(bytes).getInt();
+            return ByteBuffer.wrap(wholeBytes).getInt();
         } else if (fieldType.equals(long.class) || fieldType.equals(Long.class)) {
             byte[] wholeBytes = new byte[8];
             int wholeBytesIndex = 7;

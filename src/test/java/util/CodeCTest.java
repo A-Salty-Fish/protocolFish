@@ -237,13 +237,13 @@ public class CodeCTest {
     @Test
     public void getVariableLength() {
         CodecUtil codecUtil = new CodecUtil("");
-        int length =  codecUtil.getVariableLength(new byte[]{0,1,1}, 1);
+        int length = codecUtil.getVariableLength(new byte[]{0, 1, 1}, 1);
         Assert.assertEquals(length, 257);
-        length =  codecUtil.getVariableLength(new byte[]{0,1,1,1}, 1);
+        length = codecUtil.getVariableLength(new byte[]{0, 1, 1, 1}, 1);
         Assert.assertEquals(length, 257);
-        length =  codecUtil.getVariableLength(new byte[]{0,1}, 0);
+        length = codecUtil.getVariableLength(new byte[]{0, 1}, 0);
         Assert.assertEquals(length, 1);
-        length =  codecUtil.getVariableLength(new byte[]{1,1,1}, 0);
+        length = codecUtil.getVariableLength(new byte[]{1, 1, 1}, 0);
         Assert.assertEquals(length, 257);
     }
 
@@ -290,29 +290,46 @@ public class CodeCTest {
     public void testEncodeAndDecode() throws Exception {
         CodecUtil codecUtil = new CodecUtil("");
 
-//        CodecUtil.registerClass(TestEntity.class);
-//        TestEntity testEntity = getRandomTestEntity();
-//        System.out.println(new Gson().toJson(testEntity));
-//        byte[] bytes = codecUtil.encode(testEntity);
+        CodecUtil.registerClass(TestEntity.class);
+        TestEntity testEntity = getRandomTestEntity();
+        System.out.println(new Gson().toJson(testEntity));
+        byte[] bytes = codecUtil.encode(testEntity);
 //        System.out.println(bytes.length);
-//        TestEntity testEntity2 = codecUtil.decode(bytes, TestEntity.class);
-//        System.out.println(new Gson().toJson(testEntity2));
-
-        CodecUtil.registerClass(TestEntity1.class);
-        TestEntity1 testEntity1 = new TestEntity1();
-        testEntity1.num1 = 111111111;
-        testEntity1.num2 = 222222222;
-        testEntity1.longNum = 33333333344L;
-        testEntity1.longNum2 = 2222222222444444L;
-        System.out.println(new Gson().toJson(testEntity1));
-        byte[] bytes = codecUtil.encode(testEntity1);
-//        System.out.println(Arrays.toString(bytes));
-//        System.out.println(bytes.length);
-        for (int i = 0; i < bytes.length; i++) {
-            System.out.println(CodeCTest.byteToString(bytes[i]));
-        }
-        TestEntity1 testEntity2 = codecUtil.decode(bytes, TestEntity1.class);
+        TestEntity testEntity2 = codecUtil.decode(bytes, TestEntity.class);
         System.out.println(new Gson().toJson(testEntity2));
+        Assert.assertEquals(testEntity.getName(), testEntity2.getName());
+        Assert.assertEquals(testEntity.getName2(), testEntity2.getName2());
+        Assert.assertEquals(testEntity.getDoubleNum(), testEntity2.getDoubleNum(), 0.00001);
+        Assert.assertEquals(testEntity.getDoubleNum2(), testEntity2.getDoubleNum2(), 0.00001);
+        Assert.assertEquals(testEntity.getLongNum(), testEntity2.getLongNum());
+        Assert.assertEquals(testEntity.getLongNum2(), testEntity2.getLongNum2());
+        Assert.assertEquals(testEntity.getIntNum(), testEntity2.getIntNum());
+        Assert.assertEquals(testEntity.getIntNum2(), testEntity2.getIntNum2());
+        Assert.assertEquals(testEntity.getLocalDate(), testEntity2.getLocalDate());
+        Assert.assertEquals(testEntity.getLocalDateTime(), testEntity2.getLocalDateTime());
+
+//
+//        CodecUtil.registerClass(TestEntity1.class);
+//        TestEntity1 testEntity1 = new TestEntity1();
+//        testEntity1.num1 = 111111111;
+//        testEntity1.num2 = 222222222;
+//        testEntity1.longNum = 33333333344L;
+//        testEntity1.longNum2 = 2222222222444444L;
+//        testEntity1.xDouble = 1.111;
+//        testEntity1.xDouble2 = 1111111.11111111;
+//        testEntity1.zname = "hello world";
+//        testEntity1.zname2 = "hello this world";
+//        testEntity1.ylocalDateTime = LocalDateTime.now();
+//        testEntity1.ylocalDate = LocalDate.now();
+//        System.out.println("row data:" + new Gson().toJson(testEntity1));
+//        byte[] bytes = codecUtil.encode(testEntity1);
+//        TestEntity1 testEntity2 = codecUtil.decode(bytes, TestEntity1.class);
+//        System.out.println("decode data:" + new Gson().toJson(testEntity2));
+//        //        System.out.println(Arrays.toString(bytes));
+////        System.out.println(bytes.length);
+//        for (int i = 0; i < bytes.length; i++) {
+//            System.out.println(CodeCTest.byteToString(bytes[i]));
+//        }
     }
 
 }

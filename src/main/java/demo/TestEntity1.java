@@ -2,6 +2,9 @@ package demo;
 
 import lombok.Data;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
 /**
  * @author 13090
  * @version 1.0
@@ -18,4 +21,17 @@ public class TestEntity1 {
     public long longNum;
 
     public long longNum2;
+
+    public double xDouble;
+
+    public double xDouble2;
+
+    public String zname;
+
+    public String zname2;
+
+    public LocalDateTime ylocalDateTime;
+
+    public LocalDate ylocalDate;
+
 }
