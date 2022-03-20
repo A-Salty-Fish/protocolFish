@@ -3,9 +3,11 @@ package demo;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import proto.TestEntityOuterClass;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.Random;
 
 /**
@@ -36,7 +38,7 @@ public class TestEntity {
 
 //    public LocalDate localDate;
 
-    public LocalDateTime localDateTime;
+    public Long localDateTime;
 
     public static TestEntity getRandomTestEntity() {
         Random random = new Random();
@@ -50,7 +52,22 @@ public class TestEntity {
         testEntity.setName("test" + random.nextLong());
         testEntity.setName2("111111111111111111111111" + random.nextLong() + " " + random.nextLong());
 //        testEntity.setLocalDate(LocalDate.now());
-        testEntity.setLocalDateTime(LocalDateTime.now());
+        testEntity.setLocalDateTime(LocalDateTime.now().toInstant(ZoneOffset.of("+8")).toEpochMilli());
         return testEntity;
+    }
+
+    public static TestEntityOuterClass.TestEntity getProtocolEntityFromTestEntity(TestEntity testEntity) {
+        return TestEntityOuterClass.TestEntity.newBuilder()
+                .setDoubleNum(testEntity.getDoubleNum())
+                .setDoubleNum2(testEntity.getDoubleNum2())
+                .setIntNum(testEntity.getIntNum())
+                .setIntNum2(testEntity.getIntNum2())
+                .setLongNum(testEntity.getLongNum())
+                .setLongNum2(testEntity.getLongNum2())
+                .setName(testEntity.getName())
+                .setName2(testEntity.getName2())
+//                .setLocalDate(testEntity.getLocalDate().toEpochDay())
+                .setLocalDateTime(testEntity.getLocalDateTime())
+                .build();
     }
 }

@@ -34,7 +34,7 @@ public class CodeCTest {
         for (int i = 0; i < 10000; i++) {
             TestEntity testEntity = TestEntity.getRandomTestEntity();
             testLength1 += codecUtil.encode(testEntity).length;
-            protoLength1 += getProtocolEntityFromTestEntity(testEntity).toByteArray().length;
+            protoLength1 += TestEntity.getProtocolEntityFromTestEntity(testEntity).toByteArray().length;
         }
         System.out.println("enable variable length:");
         System.out.println("testLength:" + testLength1);
@@ -47,7 +47,7 @@ public class CodeCTest {
         for (int i = 0; i < 10000; i++) {
             TestEntity testEntity = TestEntity.getRandomTestEntity();
             testLength2 += codecUtil1.encode(testEntity).length;
-            protoLength2 += getProtocolEntityFromTestEntity(testEntity).toByteArray().length;
+            protoLength2 += TestEntity.getProtocolEntityFromTestEntity(testEntity).toByteArray().length;
         }
         System.out.println("disable variable length:");
         System.out.println("testLength:" + testLength2);
@@ -82,21 +82,6 @@ public class CodeCTest {
                 .setName2("111111111111111111111111")
                 .setLocalDate(System.currentTimeMillis())
                 .setLocalDateTime(System.currentTimeMillis())
-                .build();
-    }
-
-    public static TestEntityOuterClass.TestEntity getProtocolEntityFromTestEntity(TestEntity testEntity) {
-        return TestEntityOuterClass.TestEntity.newBuilder()
-                .setDoubleNum(testEntity.getDoubleNum())
-                .setDoubleNum2(testEntity.getDoubleNum2())
-                .setIntNum(testEntity.getIntNum())
-                .setIntNum2(testEntity.getIntNum2())
-                .setLongNum(testEntity.getLongNum())
-                .setLongNum2(testEntity.getLongNum2())
-                .setName(testEntity.getName())
-                .setName2(testEntity.getName2())
-//                .setLocalDate(testEntity.getLocalDate().toEpochDay())
-                .setLocalDateTime(testEntity.getLocalDateTime().toEpochSecond(java.time.ZoneOffset.UTC))
                 .build();
     }
 
