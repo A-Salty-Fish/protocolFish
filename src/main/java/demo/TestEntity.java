@@ -2,6 +2,7 @@ package demo;
 
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -13,7 +14,7 @@ import java.time.LocalDateTime;
  * @date 2022/3/15 16:19
  */
 @Data
-@Builder(setterPrefix = "set")
+@NoArgsConstructor
 public class TestEntity {
 
     public String name;

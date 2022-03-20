@@ -41,18 +41,18 @@ public class EncodeBenchmark {
 
     public static TestEntity getRandomTestEntity() {
         Random random = new Random();
-        return TestEntity.builder()
-                .setDoubleNum(random.nextDouble() * random.nextInt())
-                .setDoubleNum2(random.nextDouble() * random.nextLong())
-                .setIntNum(random.nextInt(256))
-                .setIntNum2(random.nextInt(256 * 128) + 256)
-                .setLongNum(random.nextLong())
-                .setLongNum2((long) random.nextInt(256 * 256 * 256))
-                .setName("test" + random.nextLong())
-                .setName2("111111111111111111111111" + random.nextLong() + " " + random.nextLong())
-                .setLocalDate(LocalDate.now())
-                .setLocalDateTime(LocalDateTime.now())
-                .build();
+        TestEntity testEntity = new TestEntity();
+        testEntity.setDoubleNum(random.nextDouble() * random.nextInt());
+        testEntity.setDoubleNum2(random.nextDouble() * random.nextLong());
+        testEntity.setIntNum(random.nextInt(256));
+        testEntity.setIntNum2(random.nextInt(256 * 128) + 256);
+        testEntity.setLongNum(random.nextLong());
+        testEntity.setLongNum2((long) random.nextInt(256 * 256 * 256));
+        testEntity.setName("test" + random.nextLong());
+        testEntity.setName2("111111111111111111111111" + random.nextLong() + " " + random.nextLong());
+        testEntity.setLocalDate(LocalDate.now());
+        testEntity.setLocalDateTime(LocalDateTime.now());
+        return testEntity;
     }
 
     @Benchmark

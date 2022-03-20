@@ -54,7 +54,7 @@ public class CodecUtil {
         this.clientKey = null;
     }
 
-    public Byte[] encode(Object obj) throws IllegalAccessException {
+    public byte[] encode(Object obj) throws IllegalAccessException {
         List<Field> constantLengthFields = constantLengthFieldMap.get(obj.getClass());
         List<Field> variableLengthFields = variableLengthFieldMap.get(obj.getClass());
         List<Byte> bytes = new ArrayList<>(constantLengthFields.size() * 4 + variableLengthFields.size() * 4);
@@ -67,7 +67,11 @@ public class CodecUtil {
             field.setAccessible(true);
             offset += encodeVariableLengthField(obj, field, bytes, offset);
         }
-        return bytes.toArray(new Byte[0]);
+        byte[] bytesArray = new byte[bytes.size()];
+        for (int i = 0; i < bytes.size(); i++) {
+            bytesArray[i] = bytes.get(i);
+        }
+        return bytesArray;
     }
 
     public int encodeConstantLengthField(Object obj, Field field, List<Byte> bytes, int offset) throws IllegalAccessException {
@@ -164,7 +168,11 @@ public class CodecUtil {
 
     public int encodeVariableLengthField(Object obj, Field field, List<Byte> bytes, int offset) throws IllegalAccessException {
         byte[] addBytes = getBytes(obj, field);
-        return appendVariableBytes(addBytes, offset, bytes);
+        int addOffset = 0;
+        if (offset % 8 != 0) {
+            addOffset = 8 - offset % 8;
+        }
+        return appendVariableBytes(addBytes, offset, bytes) + addOffset;
     }
 
 
@@ -309,6 +317,7 @@ public class CodecUtil {
         T result = clazz.newInstance();
         for (Field field : constantLengthFields) {
             offset += decodeConstantBytes(bytes, field, offset, result);
+            System.out.println(field.getName() + ":" + field.get(result));
         }
         for (Field field : variableLengthFields) {
             offset += decodeVariableBytes(bytes, field, offset, result);
@@ -335,7 +344,7 @@ public class CodecUtil {
 
     public int decodeConstantBytes(byte[] bytes, Field field, int offset, Object obj) throws Exception {
         int headLength = getConstantHeadLength(field);
-        int valueLength = getLengthFromHead(bytes, offset, headLength);
+        int valueLength = getLengthFromHead(bytes, headLength, offset) + 1;
         offset += headLength;
         byte[] valueBytes = getValueBytes(bytes, offset, valueLength);
         field.set(obj, convertBytesToObject(valueBytes, field));
@@ -369,8 +378,8 @@ public class CodecUtil {
             }
         } else {
             for (int i = 0; i < valueLength; i++) {
-                byte curByte = bytes[index];
-                byte nextByte = bytes[index + 1];
+                byte curByte = bytes[index + i];
+                byte nextByte = bytes[index + i + 1];
                 result[i] = (byte) ((curByte << bitOffset) | ((nextByte >> (8 - bitOffset)) & getMask(bitOffset)));
             }
         }
@@ -400,39 +409,39 @@ public class CodecUtil {
             }
 //            return ByteBuffer.wrap(bytes).getChar();
         } else if (fieldType.equals(int.class) || fieldType.equals(Integer.class)) {
+            byte[] wholeBytes = new byte[4];
             if (bytes.length == 1) {
-                return (int) bytes[0];
+                wholeBytes[0] = 0;
+                wholeBytes[1] = 0;
+                wholeBytes[2] = 0;
+                wholeBytes[3] = bytes[0];
             } else if (bytes.length == 2) {
-                return (int) (bytes[1] << 8 | bytes[0]);
+                wholeBytes[0] = 0;
+                wholeBytes[1] = 0;
+                wholeBytes[2] = bytes[0];
+                wholeBytes[3] = bytes[1];
             } else if (bytes.length == 3) {
-                return (int) (bytes[2] << 16 | bytes[1] << 8 | bytes[0]);
+                wholeBytes[0] = 0;
+                wholeBytes[1] = bytes[0];
+                wholeBytes[2] = bytes[1];
+                wholeBytes[3] = bytes[2];
             } else if (bytes.length == 4) {
-                return (int) (bytes[3] << 24 | bytes[2] << 16 | bytes[1] << 8 | bytes[0]);
+                wholeBytes[0] = bytes[0];
+                wholeBytes[1] = bytes[1];
+                wholeBytes[2] = bytes[2];
+                wholeBytes[3] = bytes[3];
             } else {
                 return null;
             }
-//            return ByteBuffer.wrap(bytes).getInt();
+            return ByteBuffer.wrap(bytes).getInt();
         } else if (fieldType.equals(long.class) || fieldType.equals(Long.class)) {
-            if (bytes.length == 1) {
-                return (long) bytes[0];
-            } else if (bytes.length == 2) {
-                return (long) bytes[1] << 8 | (long) bytes[0];
-            } else if (bytes.length == 3) {
-                return (long) bytes[2] << 16 | (long) bytes[1] << 8 | (long) bytes[0];
-            } else if (bytes.length == 4) {
-                return (long) bytes[3] << 24 | (long) bytes[2] << 16 | (long) bytes[1] << 8 | (long) bytes[0];
-            } else if (bytes.length == 5) {
-                return (long) bytes[4] << 32 | (long) bytes[3] << 24 | (long) bytes[2] << 16 | (long) bytes[1] << 8 | (long) bytes[0];
-            } else if (bytes.length == 6) {
-                return (long) bytes[5] << 40 | (long) bytes[4] << 32 | (long) bytes[3] << 24 | (long) bytes[2] << 16 | (long) bytes[1] << 8 | (long) bytes[0];
-            } else if (bytes.length == 7) {
-                return (long) bytes[6] << 48 | (long) bytes[5] << 40 | (long) bytes[4] << 32 | (long) bytes[3] << 24 | (long) bytes[2] << 16 | (long) bytes[1] << 8 | (long) bytes[0];
-            } else if (bytes.length == 8) {
-                return (long) bytes[7] << 56 | (long) bytes[6] << 48 | (long) bytes[5] << 40 | (long) bytes[4] << 32 | (long) bytes[3] << 24 | (long) bytes[2] << 16 | (long) bytes[1] << 8 | (long) bytes[0];
-            } else {
-                return null;
+            byte[] wholeBytes = new byte[8];
+            int wholeBytesIndex = 7;
+            int bytesIndex = bytes.length - 1;
+            while (bytesIndex >= 0) {
+                wholeBytes[wholeBytesIndex--] = bytes[bytesIndex--];
             }
-//            return ByteBuffer.wrap(bytes).getLong();
+            return ByteBuffer.wrap(wholeBytes).getLong();
         } else if (fieldType.equals(float.class) || fieldType.equals(Float.class)) {
             byte[] wholeBytes = new byte[4];
             if (bytes.length == 4) {
