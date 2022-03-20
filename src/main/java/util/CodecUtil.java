@@ -162,18 +162,22 @@ public class CodecUtil {
         return appendVariableBytes(addBytes, offset, bytes);
     }
 
-    final static int VARIABLE_HEAD_LENGTH = 16;
+    int variableHeadByteLength = 2;
 
     public int appendVariableBytes(byte[] addBytes, int offset, List<Byte> bytes) {
         int addBytesNum = addBytes.length;
-        Byte headByte1 = (byte) (addBytesNum >> 8);
-        Byte headByte2 = (byte) (addBytesNum & 0xff);
-        bytes.add(headByte1);
-        bytes.add(headByte2);
+//        byte[] headBytes = new byte[variableHeadByteLength];
+        for (int i = 0; i < variableHeadByteLength; i++) {
+            bytes.add((byte) ((addBytesNum >> (8 * (variableHeadByteLength - i - 1))) & 0xff));
+        }
+//        Byte headByte1 = (byte) (addBytesNum >> 8);
+//        Byte headByte2 = (byte) (addBytesNum & 0xff);
+//        bytes.add(headByte1);
+//        bytes.add(headByte2);
         for (byte addByte : addBytes) {
             bytes.add(addByte);
         }
-        return addBytes.length * 8 + VARIABLE_HEAD_LENGTH;
+        return addBytes.length * 8 + variableHeadByteLength * 8;
     }
 
     private static final ConcurrentHashMap<Class<?>, List<Field>> constantLengthFieldMap = new ConcurrentHashMap<>();
@@ -492,5 +496,18 @@ public class CodecUtil {
         } else {
             return 0;
         }
+    }
+
+    public int getVariableLength(byte[] bytes, int offset) {
+        if (offset % 8 != 0) {
+            offset += 8 - offset % 8;
+        }
+        int index = offset / 8;
+        int length = 0;
+        for (int i = index; i < index + variableHeadByteLength; i++) {
+            length <<= 8;
+            length |= bytes[i] & 0xFF;
+        }
+        return length;
     }
 }

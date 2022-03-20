@@ -222,4 +222,17 @@ public class CodeCTest {
         String dc = (String) codecUtil.convertBytesToObject(d.getBytes(StandardCharsets.UTF_8), TestEntity.class.getDeclaredField("name"));
         Assert.assertEquals(d, dc);
     }
+
+    @Test
+    public void getVariableLength() {
+        CodecUtil codecUtil = new CodecUtil("");
+        int length =  codecUtil.getVariableLength(new byte[]{0,1,1}, 1);
+        Assert.assertEquals(length, 257);
+        length =  codecUtil.getVariableLength(new byte[]{0,1,1,1}, 1);
+        Assert.assertEquals(length, 257);
+        length =  codecUtil.getVariableLength(new byte[]{0,1}, 0);
+        Assert.assertEquals(length, 1);
+        length =  codecUtil.getVariableLength(new byte[]{1,1,1}, 0);
+        Assert.assertEquals(length, 257);
+    }
 }
