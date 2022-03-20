@@ -25,17 +25,36 @@ import java.util.Random;
 public class CodeCTest {
 
     public static void main(String[] args) throws IllegalAccessException {
-//        CodecUtil.registerClass(TestEntity.class);
-//        long protoLength = 0;
-//        long testLength = 0;
-//        for (int i = 0; i < 10000; i++) {
-//            TestEntity testEntity = getRandomTestEntity();
-//            testLength += new CodecUtil("").encode(testEntity).length;
-//            protoLength += getProtocolEntityFromTestEntity(testEntity).toByteArray().length;
-//        }
-//        System.out.println("testLength:" + testLength);
-//        System.out.println("protoLength:" + protoLength);
-//        System.out.println("testLength/protoLength: " + (double) testLength / protoLength);
+        CodecUtil.registerClass(TestEntity.class);
+        ProtocolConfig protocolConfig = ProtocolConfig.defaultConfig();
+        protocolConfig.setVariableHeadByteLength(1);
+        CodecUtil codecUtil = new CodecUtil(protocolConfig);
+        long protoLength1 = 0;
+        long testLength1 = 0;
+        for (int i = 0; i < 10000; i++) {
+            TestEntity testEntity = getRandomTestEntity();
+            testLength1 += codecUtil.encode(testEntity).length;
+            protoLength1 += getProtocolEntityFromTestEntity(testEntity).toByteArray().length;
+        }
+        System.out.println("enable variable length:");
+        System.out.println("testLength:" + testLength1);
+        System.out.println("protoLength:" + protoLength1);
+        System.out.println("testLength/protoLength: " + (double) testLength1 / protoLength1);
+
+        CodecUtil codecUtil1 = new CodecUtil("");
+        long protoLength2 = 0;
+        long testLength2 = 0;
+        for (int i = 0; i < 10000; i++) {
+            TestEntity testEntity = getRandomTestEntity();
+            testLength2 += codecUtil1.encode(testEntity).length;
+            protoLength2 += getProtocolEntityFromTestEntity(testEntity).toByteArray().length;
+        }
+        System.out.println("disable variable length:");
+        System.out.println("testLength:" + testLength2);
+        System.out.println("protoLength:" + protoLength2);
+        System.out.println("testLength/protoLength: " + (double) testLength2 / protoLength2);
+
+        System.out.println("\n" + ((double) testLength2 / protoLength2 - (double) testLength1 / protoLength1));
     }
 
     @Test
@@ -332,4 +351,25 @@ public class CodeCTest {
 //        }
     }
 
+    @Test
+    public void testVariableLengthHeader() throws Exception {
+        CodecUtil.registerClass(TestEntity.class);
+        ProtocolConfig protocolConfig = ProtocolConfig.defaultConfig();
+        protocolConfig.setVariableHeadByteLength(1);
+        CodecUtil codecUtil1 = new CodecUtil(protocolConfig);
+        CodecUtil codecUtil2 = new CodecUtil("");
+        TestEntity testEntity = getRandomTestEntity();
+        System.out.println(new Gson().toJson(testEntity));
+
+        byte[] bytes1 = codecUtil1.encode(testEntity);
+        System.out.println(bytes1.length);
+        TestEntity testEntity1 = codecUtil1.decode(bytes1, TestEntity.class);
+        System.out.println(new Gson().toJson(testEntity1));
+
+        byte[] bytes2 = codecUtil2.encode(testEntity);
+        System.out.println(bytes2.length);
+        TestEntity testEntity2 = codecUtil2.decode(bytes2, TestEntity.class);
+        System.out.println(new Gson().toJson(testEntity2));
+
+    }
 }

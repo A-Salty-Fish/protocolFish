@@ -178,17 +178,22 @@ public class CodecUtil {
     public int appendVariableBytes(byte[] addBytes, int offset, List<Byte> bytes) {
         int addBytesNum = addBytes.length;
 //        byte[] headBytes = new byte[variableHeadByteLength];
-        for (int i = 0; i < protocolConfig.getVariableHeadByteLength(); i++) {
+        int variableHeadByteLength = protocolConfig.getVariableHeadByteLength();
+        if (variableHeadByteLength == 1) {
+            addBytesNum = Math.min(addBytesNum, 255);
+        } else if (variableHeadByteLength == 2) {
+            addBytesNum = Math.min(addBytesNum, 65535);
+        } else if (variableHeadByteLength == 3) {
+            addBytesNum = Math.min(addBytesNum, 16777215);
+        }
+        for (int i = 0; i < variableHeadByteLength; i++) {
             bytes.add((byte) ((addBytesNum >> (8 * (protocolConfig.getVariableHeadByteLength() - i - 1))) & 0xff));
         }
-//        Byte headByte1 = (byte) (addBytesNum >> 8);
-//        Byte headByte2 = (byte) (addBytesNum & 0xff);
-//        bytes.add(headByte1);
-//        bytes.add(headByte2);
-        for (byte addByte : addBytes) {
+        for (int i = 0; i < addBytesNum; i++) {
+            byte addByte = addBytes[i];
             bytes.add(addByte);
         }
-        return addBytes.length * 8 + protocolConfig.getVariableHeadByteLength() * 8;
+        return addBytesNum * 8 + variableHeadByteLength * 8;
     }
 
     private static final ConcurrentHashMap<Class<?>, List<Field>> constantLengthFieldMap = new ConcurrentHashMap<>();
