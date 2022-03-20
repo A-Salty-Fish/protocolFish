@@ -5,6 +5,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import proto.TestEntityOuterClass;
 
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -199,5 +200,26 @@ public class CodeCTest {
     public byte[] DoubleToBytes(double value) {
         long doubleBits = Double.doubleToLongBits(value);
         return new byte[]{(byte) (doubleBits >> 56), (byte) (doubleBits >> 48), (byte) (doubleBits >> 40), (byte) (doubleBits >> 32), (byte) (doubleBits >> 24), (byte) (doubleBits >> 16), (byte) (doubleBits >> 8), (byte) doubleBits};
+    }
+
+    @Test
+    public void testConvertBytesToObjectString() throws Exception {
+        CodecUtil codecUtil = new CodecUtil("");
+        String a = "";
+        String b = "a";
+        String c = "hello world this day is a good day";
+        String d = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaabbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbccccccccccccccccccccccccccccccc";
+
+        String ac = (String) codecUtil.convertBytesToObject(a.getBytes(StandardCharsets.UTF_8), TestEntity.class.getDeclaredField("name"));
+        Assert.assertEquals(a, ac);
+
+        String bc = (String) codecUtil.convertBytesToObject(b.getBytes(StandardCharsets.UTF_8), TestEntity.class.getDeclaredField("name"));
+        Assert.assertEquals(b, bc);
+
+        String cc = (String) codecUtil.convertBytesToObject(c.getBytes(StandardCharsets.UTF_8), TestEntity.class.getDeclaredField("name"));
+        Assert.assertEquals(c, cc);
+
+        String dc = (String) codecUtil.convertBytesToObject(d.getBytes(StandardCharsets.UTF_8), TestEntity.class.getDeclaredField("name"));
+        Assert.assertEquals(d, dc);
     }
 }
