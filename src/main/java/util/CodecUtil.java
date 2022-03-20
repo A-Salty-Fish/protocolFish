@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.time.*;
 import java.util.ArrayList;
@@ -25,6 +26,10 @@ public class CodecUtil {
     String clientKey;
 
     ProtocolConfig protocolConfig;
+
+    int variableHeadByteLength = 2;
+
+    Charset charset = StandardCharsets.UTF_8;
 
     /**
      * for server pipeline
@@ -162,7 +167,6 @@ public class CodecUtil {
         return appendVariableBytes(addBytes, offset, bytes);
     }
 
-    int variableHeadByteLength = 2;
 
     public int appendVariableBytes(byte[] addBytes, int offset, List<Byte> bytes) {
         int addBytesNum = addBytes.length;
@@ -286,7 +290,7 @@ public class CodecUtil {
         }
         if (fieldType.equals(String.class)) {
             String value = (String) field.get(obj);
-            return value.getBytes(StandardCharsets.UTF_8);
+            return value.getBytes(charset);
         }
         return new byte[0];
     }
@@ -304,12 +308,32 @@ public class CodecUtil {
         int offset = 0;
         T result = clazz.newInstance();
         for (Field field : constantLengthFields) {
-            offset += decodeBytes(bytes, field, offset, result);
+            offset += decodeConstantBytes(bytes, field, offset, result);
+        }
+        for (Field field : variableLengthFields) {
+            offset += decodeVariableBytes(bytes, field, offset, result);
         }
         return result;
     }
 
-    public int decodeBytes(byte[] bytes, Field field, int offset, Object obj) throws Exception {
+    public int decodeVariableBytes(byte[] bytes, Field field, int offset, Object obj) throws Exception {
+        int curOffset = offset;
+        int byteLength = getVariableLength(bytes, offset);
+        if (offset % 8 != 0) {
+            curOffset += 8 - (offset % 8);
+        }
+        curOffset += variableHeadByteLength * 8;
+        int curIndex = curOffset / 8;
+        byte[] stringBytes = new byte[byteLength];
+        for (int i = 0; i < byteLength; i++) {
+            stringBytes[i] = bytes[curIndex + i];
+        }
+        field.set(obj, new String(stringBytes, charset));
+        curOffset += byteLength * 8;
+        return curOffset - offset;
+    }
+
+    public int decodeConstantBytes(byte[] bytes, Field field, int offset, Object obj) throws Exception {
         int headLength = getConstantHeadLength(field);
         int valueLength = getLengthFromHead(bytes, offset, headLength);
         offset += headLength;
@@ -471,7 +495,7 @@ public class CodecUtil {
             long time = ByteBuffer.wrap(wholeBytes).getLong();
             return LocalDateTime.ofInstant(Instant.ofEpochMilli(time), ZoneId.systemDefault()).toLocalDate();
         } else if (fieldType.equals(String.class)) {
-            return new String(bytes, StandardCharsets.UTF_8);
+            return new String(bytes, charset);
         }
         return null;
     }

@@ -235,4 +235,43 @@ public class CodeCTest {
         length =  codecUtil.getVariableLength(new byte[]{1,1,1}, 0);
         Assert.assertEquals(length, 257);
     }
+
+    @Test
+    public void decodeVariableBytes() throws Exception {
+        CodecUtil codecUtil = new CodecUtil("");
+
+        String testString = "hello world";
+        byte[] testBytes = testString.getBytes(StandardCharsets.UTF_8);
+        byte[] testBytes2 = new byte[testBytes.length + 2];
+        testBytes2[0] = (byte) (testBytes.length >> 8);
+        testBytes2[1] = (byte) testBytes.length;
+        System.arraycopy(testBytes, 0, testBytes2, 2, testBytes.length);
+        TestEntity testEntity = TestEntity.builder().build();
+        Assert.assertEquals(testBytes2.length, 13);
+        Assert.assertEquals(codecUtil.decodeVariableBytes(testBytes2, testEntity.getClass().getField("name"), 0, testEntity), testBytes2.length * 8);
+        Assert.assertEquals(testEntity.getName(), testString);
+
+        String testString2 = " ";
+        byte[] testBytes3 = testString2.getBytes(StandardCharsets.UTF_8);
+        byte[] testBytes4 = new byte[testBytes3.length + 2];
+        testBytes4[0] = (byte) (testBytes3.length >> 8);
+        testBytes4[1] = (byte) testBytes3.length;
+        System.arraycopy(testBytes3, 0, testBytes4, 2, testBytes3.length);
+        TestEntity testEntity2 = TestEntity.builder().build();
+        Assert.assertEquals(testBytes4.length, testString2.length() + 2);
+        Assert.assertEquals(codecUtil.decodeVariableBytes(testBytes4, testEntity2.getClass().getField("name"), 0, testEntity2), testBytes4.length * 8);
+        Assert.assertEquals(testEntity2.getName(), testString2);
+
+        String testString3 = "hello this world";
+        byte[] testBytes5 = testString3.getBytes(StandardCharsets.UTF_8);
+        byte[] testBytes6 = new byte[testBytes5.length + 3];
+        testBytes6[0] = (byte) (testBytes5.length >> 16);
+        testBytes6[1] = (byte) (testBytes5.length >> 8);
+        testBytes6[2] = (byte) testBytes5.length;
+        System.arraycopy(testBytes5, 0, testBytes6, 3, testBytes5.length);
+        TestEntity testEntity3 = TestEntity.builder().build();
+        Assert.assertEquals(testBytes6.length, testString3.length() + 3);
+        Assert.assertEquals(codecUtil.decodeVariableBytes(testBytes6, testEntity3.getClass().getField("name"), 2, testEntity3), testBytes6.length * 8 - 2);
+        Assert.assertEquals(testEntity3.getName(), testString3);
+    }
 }

@@ -16,9 +16,9 @@ import java.time.LocalDateTime;
 @Builder(setterPrefix = "set")
 public class TestEntity {
 
-    private String name;
+    public String name;
 
-    private String name2;
+    public String name2;
 
     public long longNum;
 
