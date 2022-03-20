@@ -32,7 +32,7 @@ public class CodeCTest {
         long protoLength1 = 0;
         long testLength1 = 0;
         for (int i = 0; i < 10000; i++) {
-            TestEntity testEntity = getRandomTestEntity();
+            TestEntity testEntity = TestEntity.getRandomTestEntity();
             testLength1 += codecUtil.encode(testEntity).length;
             protoLength1 += getProtocolEntityFromTestEntity(testEntity).toByteArray().length;
         }
@@ -45,7 +45,7 @@ public class CodeCTest {
         long protoLength2 = 0;
         long testLength2 = 0;
         for (int i = 0; i < 10000; i++) {
-            TestEntity testEntity = getRandomTestEntity();
+            TestEntity testEntity = TestEntity.getRandomTestEntity();
             testLength2 += codecUtil1.encode(testEntity).length;
             protoLength2 += getProtocolEntityFromTestEntity(testEntity).toByteArray().length;
         }
@@ -85,37 +85,6 @@ public class CodeCTest {
                 .build();
     }
 
-//    public static TestEntity getEntity() {
-//        return TestEntity.builder()
-//                .setDoubleNum(1.1)
-//                .setDoubleNum2(1111111.1111111111)
-//                .setIntNum(1)
-//                .setIntNum2(1111111111)
-//                .setLongNum(1L)
-//                .setLongNum2(1111111111111111111L)
-//                .setName("1")
-//                .setName2("111111111111111111111111")
-//                .setLocalDate(LocalDate.now())
-//                .setLocalDateTime(LocalDateTime.now())
-//                .build();
-//    }
-
-    public static TestEntity getRandomTestEntity() {
-        Random random = new Random();
-        TestEntity testEntity = new TestEntity();
-        testEntity.setDoubleNum(random.nextDouble() * random.nextInt());
-        testEntity.setDoubleNum2(random.nextDouble() * random.nextLong());
-        testEntity.setIntNum(random.nextInt(256));
-        testEntity.setIntNum2(random.nextInt(256 * 128) + 256);
-        testEntity.setLongNum(random.nextLong());
-        testEntity.setLongNum2((long) random.nextInt(256 * 256 * 256));
-        testEntity.setName("test" + random.nextLong());
-        testEntity.setName2("111111111111111111111111" + random.nextLong() + " " + random.nextLong());
-        testEntity.setLocalDate(LocalDate.now());
-        testEntity.setLocalDateTime(LocalDateTime.now());
-        return testEntity;
-    }
-
     public static TestEntityOuterClass.TestEntity getProtocolEntityFromTestEntity(TestEntity testEntity) {
         return TestEntityOuterClass.TestEntity.newBuilder()
                 .setDoubleNum(testEntity.getDoubleNum())
@@ -126,13 +95,13 @@ public class CodeCTest {
                 .setLongNum2(testEntity.getLongNum2())
                 .setName(testEntity.getName())
                 .setName2(testEntity.getName2())
-                .setLocalDate(testEntity.getLocalDate().toEpochDay())
+//                .setLocalDate(testEntity.getLocalDate().toEpochDay())
                 .setLocalDateTime(testEntity.getLocalDateTime().toEpochSecond(java.time.ZoneOffset.UTC))
                 .build();
     }
 
     public static byte[] testGetBytes() {
-        TestEntity entity = getRandomTestEntity();
+        TestEntity entity = TestEntity.getRandomTestEntity();
         try {
             return new CodecUtil("").getBytes(entity, entity.getClass().getField("intNum"));
         } catch (Exception e) {
@@ -142,7 +111,7 @@ public class CodeCTest {
     }
 
     public static void testGetBytes2() {
-        TestEntity entity = getRandomTestEntity();
+        TestEntity entity = TestEntity.getRandomTestEntity();
         try {
             List<Byte> bytes = new ArrayList<>();
             int offset = (new CodecUtil("").encodeConstantLengthField(entity, entity.getClass().getField("intNum"), bytes,
@@ -310,7 +279,7 @@ public class CodeCTest {
         CodecUtil codecUtil = new CodecUtil("");
 
         CodecUtil.registerClass(TestEntity.class);
-        TestEntity testEntity = getRandomTestEntity();
+        TestEntity testEntity = TestEntity.getRandomTestEntity();
         System.out.println(new Gson().toJson(testEntity));
         byte[] bytes = codecUtil.encode(testEntity);
 //        System.out.println(bytes.length);
@@ -324,7 +293,7 @@ public class CodeCTest {
         Assert.assertEquals(testEntity.getLongNum2(), testEntity2.getLongNum2());
         Assert.assertEquals(testEntity.getIntNum(), testEntity2.getIntNum());
         Assert.assertEquals(testEntity.getIntNum2(), testEntity2.getIntNum2());
-        Assert.assertEquals(testEntity.getLocalDate(), testEntity2.getLocalDate());
+//        Assert.assertEquals(testEntity.getLocalDate(), testEntity2.getLocalDate());
         Assert.assertEquals(testEntity.getLocalDateTime(), testEntity2.getLocalDateTime());
 
 //
@@ -358,7 +327,7 @@ public class CodeCTest {
         protocolConfig.setVariableHeadByteLength(1);
         CodecUtil codecUtil1 = new CodecUtil(protocolConfig);
         CodecUtil codecUtil2 = new CodecUtil("");
-        TestEntity testEntity = getRandomTestEntity();
+        TestEntity testEntity = TestEntity.getRandomTestEntity();
         System.out.println(new Gson().toJson(testEntity));
 
         byte[] bytes1 = codecUtil1.encode(testEntity);

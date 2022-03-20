@@ -35,25 +35,11 @@ public class EncodeBenchmark {
     @Setup(Level.Trial)
     public void init() throws InterruptedException {
         CodecUtil.registerClass(TestEntity.class);
-        entity = getRandomTestEntity();
+        entity = TestEntity.getRandomTestEntity();
         protoEntity = getProtocolEntityFromTestEntity(entity);
     }
 
-    public static TestEntity getRandomTestEntity() {
-        Random random = new Random();
-        TestEntity testEntity = new TestEntity();
-        testEntity.setDoubleNum(random.nextDouble() * random.nextInt());
-        testEntity.setDoubleNum2(random.nextDouble() * random.nextLong());
-        testEntity.setIntNum(random.nextInt(256));
-        testEntity.setIntNum2(random.nextInt(256 * 128) + 256);
-        testEntity.setLongNum(random.nextLong());
-        testEntity.setLongNum2((long) random.nextInt(256 * 256 * 256));
-        testEntity.setName("test" + random.nextLong());
-        testEntity.setName2("111111111111111111111111" + random.nextLong() + " " + random.nextLong());
-        testEntity.setLocalDate(LocalDate.now());
-        testEntity.setLocalDateTime(LocalDateTime.now());
-        return testEntity;
-    }
+
 
     @Benchmark
     public void proto(Blackhole bh) {
@@ -75,7 +61,7 @@ public class EncodeBenchmark {
                 .setLongNum2(testEntity.getLongNum2())
                 .setName(testEntity.getName())
                 .setName2(testEntity.getName2())
-                .setLocalDate(testEntity.getLocalDate().toEpochDay())
+//                .setLocalDate(testEntity.getLocalDate().toEpochDay())
                 .setLocalDateTime(testEntity.getLocalDateTime().toEpochSecond(java.time.ZoneOffset.UTC))
                 .build();
     }
