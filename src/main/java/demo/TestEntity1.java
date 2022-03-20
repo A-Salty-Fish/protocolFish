@@ -14,4 +14,8 @@ public class TestEntity1 {
     public int num1;
 
     public int num2;
+
+    public long longNum;
+
+    public long longNum2;
 }

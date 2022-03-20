@@ -98,6 +98,9 @@ public class CodecUtil {
                     index++;
                 } else {
                     bytes.set(index, (byte) (curByte | (writeConstantValueBytesNum << (8 - bitOffset - headLength))));
+                    if (bitOffset + headLength == 8) {
+                        index++;
+                    }
                 }
             }
             bitOffset += headLength;
@@ -107,7 +110,7 @@ public class CodecUtil {
             byte addByte = addBytes[i];
             bytes.add((byte) 0);
             Byte curByte = bytes.get(index);
-            curByte = (byte) (curByte | ((addByte & 0xff) >> (bitOffset)));
+            curByte = (byte) (curByte | (((addByte) >> bitOffset) & getMask(8 - bitOffset)));
             bytes.set(index, curByte);
             index++;
             if (bitOffset != 0) {
@@ -317,7 +320,6 @@ public class CodecUtil {
         T result = clazz.newInstance();
         for (Field field : constantLengthFields) {
             offset += decodeConstantBytes(bytes, field, offset, result);
-            System.out.println(field.getName() + ":" + field.get(result));
         }
         for (Field field : variableLengthFields) {
             offset += decodeVariableBytes(bytes, field, offset, result);

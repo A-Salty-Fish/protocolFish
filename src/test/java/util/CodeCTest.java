@@ -302,6 +302,8 @@ public class CodeCTest {
         TestEntity1 testEntity1 = new TestEntity1();
         testEntity1.num1 = 111111111;
         testEntity1.num2 = 222222222;
+        testEntity1.longNum = 33333333344L;
+        testEntity1.longNum2 = 2222222222444444L;
         System.out.println(new Gson().toJson(testEntity1));
         byte[] bytes = codecUtil.encode(testEntity1);
 //        System.out.println(Arrays.toString(bytes));
