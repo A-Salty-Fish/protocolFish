@@ -172,5 +172,32 @@ public class CodeCTest {
 //        System.out.println());
     }
 
+    @Test
+    public void testConvertBytesToObjectDouble() throws Exception {
+        CodecUtil codecUtil = new CodecUtil("");
+        Double a = 1.1111111;
+        Double b = 0.11;
+        Double c = 0.5;
+        Double d = 1.0;
+        byte[] aBytes = DoubleToBytes(a);
+        double aC = (double) codecUtil.convertBytesToObject(aBytes, TestEntity.class.getDeclaredField("doubleNum"));
+        Assert.assertEquals(a, aC, 0.000001);
 
+        byte[] bBytes = DoubleToBytes(b);
+        double bC = (double) codecUtil.convertBytesToObject(bBytes, TestEntity.class.getDeclaredField("doubleNum"));
+        Assert.assertEquals(b, bC, 0.000001);
+
+        byte[] cBytes = DoubleToBytes(c);
+        double cC = (double) codecUtil.convertBytesToObject(cBytes, TestEntity.class.getDeclaredField("doubleNum"));
+        Assert.assertEquals(c, cC, 0.000001);
+
+        byte[] dBytes = DoubleToBytes(d);
+        double dC = (double) codecUtil.convertBytesToObject(dBytes, TestEntity.class.getDeclaredField("doubleNum"));
+        Assert.assertEquals(d, dC, 0.000001);
+    }
+
+    public byte[] DoubleToBytes(double value) {
+        long doubleBits = Double.doubleToLongBits(value);
+        return new byte[]{(byte) (doubleBits >> 56), (byte) (doubleBits >> 48), (byte) (doubleBits >> 40), (byte) (doubleBits >> 32), (byte) (doubleBits >> 24), (byte) (doubleBits >> 16), (byte) (doubleBits >> 8), (byte) doubleBits};
+    }
 }
