@@ -237,74 +237,82 @@ public class CodecUtil {
         return VARIABLE_LENGTH;
     }
 
-    public int getConstantLengthFieldByteLength(Field field) {
-        Class<?> fieldType = field.getType();
-        if (fieldType.equals(byte.class) || fieldType.equals(Byte.class)) {
+    public int getConstantClassLength(Class<?> clazz) {
+        if (clazz.equals(byte.class) || clazz.equals(Byte.class)) {
             return 1;
         }
-        if (fieldType.equals(short.class) || fieldType.equals(Short.class) || fieldType.equals(char.class) || fieldType.equals(Character.class)) {
+        if (clazz.equals(short.class) || clazz.equals(Short.class) || clazz.equals(char.class) || clazz.equals(Character.class)) {
             return 2;
         }
-        if (fieldType.equals(int.class) || fieldType.equals(Integer.class) || fieldType.equals(float.class) || fieldType.equals(Float.class)) {
+        if (clazz.equals(int.class) || clazz.equals(Integer.class) || clazz.equals(float.class) || clazz.equals(Float.class)) {
             return 4;
         }
-        if (fieldType.equals(long.class) || fieldType.equals(Long.class) || fieldType.equals(double.class) || fieldType.equals(Double.class)) {
+        if (clazz.equals(long.class) || clazz.equals(Long.class) || clazz.equals(double.class) || clazz.equals(Double.class)) {
             return 8;
         }
-        if (fieldType.equals(boolean.class) || fieldType.equals(Boolean.class)) {
+        if (clazz.equals(boolean.class) || clazz.equals(Boolean.class)) {
             return 1;
         }
-        if (fieldType.equals(LocalDateTime.class) || fieldType.equals(LocalDate.class)) {
+        if (clazz.equals(LocalDateTime.class) || clazz.equals(LocalDate.class)) {
             return 8;
         }
         return -1;
     }
 
-    public byte[] getBytes(Object obj, Field field) throws IllegalAccessException {
+    public int getConstantLengthFieldByteLength(Field field) {
         Class<?> fieldType = field.getType();
+        return getConstantClassLength(fieldType);
+    }
+
+    public byte[] getBytes(Object fieldValue, Class<?> fieldType) {
         if (fieldType.equals(byte.class) || fieldType.equals(Byte.class)) {
-            return new byte[]{(byte) field.get(obj)};
+            return new byte[]{(byte) fieldValue};
         }
         if (fieldType.equals(short.class) || fieldType.equals(Short.class) || fieldType.equals(char.class) || fieldType.equals(Character.class)) {
-            short value = (short) field.get(obj);
+            short value = (short) fieldValue;
             return new byte[]{(byte) (value >> 8), (byte) value};
         }
         if (fieldType.equals(int.class) || fieldType.equals(Integer.class)) {
-            int value = (int) field.get(obj);
+            int value = (int) fieldValue;
             return new byte[]{(byte) (value >> 24), (byte) (value >> 16), (byte) (value >> 8), (byte) value};
         }
         if (fieldType.equals(long.class) || fieldType.equals(Long.class)) {
-            long value = (long) field.get(obj);
+            long value = (long) fieldValue;
             return new byte[]{(byte) (value >> 56), (byte) (value >> 48), (byte) (value >> 40), (byte) (value >> 32), (byte) (value >> 24), (byte) (value >> 16), (byte) (value >> 8), (byte) value};
         }
         if (fieldType.equals(float.class) || fieldType.equals(Float.class)) {
-            float value = (float) field.get(obj);
+            float value = (float) fieldValue;
             int floatBits = Float.floatToIntBits(value);
             return new byte[]{(byte) (floatBits >> 24), (byte) (floatBits >> 16), (byte) (floatBits >> 8), (byte) floatBits};
         }
         if (fieldType.equals(double.class) || fieldType.equals(Double.class)) {
-            double value = (double) field.get(obj);
+            double value = (double) fieldValue;
             long doubleBits = Double.doubleToLongBits(value);
             return new byte[]{(byte) (doubleBits >> 56), (byte) (doubleBits >> 48), (byte) (doubleBits >> 40), (byte) (doubleBits >> 32), (byte) (doubleBits >> 24), (byte) (doubleBits >> 16), (byte) (doubleBits >> 8), (byte) doubleBits};
         }
         if (fieldType.equals(boolean.class) || fieldType.equals(Boolean.class)) {
-            return new byte[]{(byte) ((boolean) field.get(obj) ? 1 : 0)};
+            return new byte[]{(byte) ((boolean) fieldValue ? 1 : 0)};
         }
         if (fieldType.equals(LocalDateTime.class)) {
-            LocalDateTime value = (LocalDateTime) field.get(obj);
+            LocalDateTime value = (LocalDateTime) fieldValue;
             long epochMilli = value.toInstant(ZoneOffset.of("+8")).toEpochMilli();
             return new byte[]{(byte) (epochMilli >> 56), (byte) (epochMilli >> 48), (byte) (epochMilli >> 40), (byte) (epochMilli >> 32), (byte) (epochMilli >> 24), (byte) (epochMilli >> 16), (byte) (epochMilli >> 8), (byte) epochMilli};
         }
         if (fieldType.equals(LocalDate.class)) {
-            LocalDate value = (LocalDate) field.get(obj);
+            LocalDate value = (LocalDate) fieldValue;
             long epochMilli = value.atStartOfDay(ZoneOffset.ofHours(8)).toInstant().toEpochMilli();
             return new byte[]{(byte) (epochMilli >> 56), (byte) (epochMilli >> 48), (byte) (epochMilli >> 40), (byte) (epochMilli >> 32), (byte) (epochMilli >> 24), (byte) (epochMilli >> 16), (byte) (epochMilli >> 8), (byte) epochMilli};
         }
         if (fieldType.equals(String.class)) {
-            String value = (String) field.get(obj);
+            String value = (String) fieldValue;
             return value.getBytes(protocolConfig.getCharset());
         }
         return new byte[0];
+    }
+
+    public byte[] getBytes(Object obj, Field field) throws IllegalAccessException {
+        Class<?> fieldType = field.getType();
+        return getBytes(field.get(obj), fieldType);
     }
 
     public static enum FieldType {
@@ -389,8 +397,7 @@ public class CodecUtil {
         return result;
     }
 
-    public Object convertBytesToObject(byte[] bytes, Field field) throws Exception {
-        Class<?> fieldType = field.getType();
+    public Object convertBytesToObject(byte[] bytes, Class<?> fieldType) throws Exception {
         if (fieldType.equals(byte.class) || fieldType.equals(Byte.class)) {
             return bytes[0];
         } else if (fieldType.equals(short.class) || fieldType.equals(Short.class)) {
@@ -501,6 +508,10 @@ public class CodecUtil {
             return new String(bytes, protocolConfig.getCharset());
         }
         return null;
+    }
+
+    public Object convertBytesToObject(byte[] bytes, Field field) throws Exception {
+        return convertBytesToObject(bytes, field.getType());
     }
 
     public static byte getMask(int length) {
