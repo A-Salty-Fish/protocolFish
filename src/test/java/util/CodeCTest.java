@@ -2,6 +2,7 @@ package util;
 
 import com.google.gson.Gson;
 import demo.TestEntity;
+import demo.TestXmlEntity;
 import org.junit.Assert;
 import org.junit.Test;
 import proto.TestEntityOuterClass;
@@ -365,14 +366,21 @@ public class CodeCTest {
 
         long myLength = 0;
         long protocolLength = 0;
-        for (int i = 0; i < 100000; i++) {
+        long jsonLength = 0;
+        long xmlLength = 0;
+        for (int i = 0; i < 10000; i++) {
             TestEntity testEntity = TestEntity.getRandomTestEntity(255.0);
             myLength += codecUtil.encode(testEntity).length;
             protocolLength += TestEntity.getProtocolEntityFromTestEntity(testEntity).toByteArray().length;
+            jsonLength += new Gson().toJson(testEntity).getBytes().length;
+            TestXmlEntity testXmlEntity = TestXmlEntity.TestXmlEntityFromTestEntity(testEntity);
+            xmlLength += XmlUtil.convertToXml(testXmlEntity).getBytes().length;
         }
 
         System.out.println("myLength:" + myLength);
         System.out.println("protocolLength:" + protocolLength);
-        System.out.println("compressionRate:" + (double) myLength / protocolLength);
+        System.out.println("jsonLength:" + jsonLength);
+        System.out.println("xmlLength:" + xmlLength);
+//        System.out.println("compressionRate:" + (double) myLength / protocolLength);
     }
 }

@@ -14,6 +14,7 @@ import org.openjdk.jmh.runner.options.OptionsBuilder;
 import org.openjdk.jmh.runner.options.TimeValue;
 import proto.TestEntityOuterClass;
 import util.CodecUtil;
+import util.ProtocolConfig;
 import util.XmlUtil;
 
 import java.time.LocalDate;
@@ -53,9 +54,13 @@ public class EncodeBenchmark {
     @Setup(Level.Trial)
     public void init() throws Exception {
         CodecUtil.registerClass(TestEntity.class);
-        entity = TestEntity.getRandomTestEntity();
+        entity = TestEntity.getRandomTestEntity(255.0);
         protoEntity = getProtocolEntityFromTestEntity(entity);
         xmlEntity = TestXmlEntity.TestXmlEntityFromTestEntity(entity);
+        ProtocolConfig protocolConfig = ProtocolConfig.defaultConfig();
+        protocolConfig.setVariableHeadByteLength(1);
+        protocolConfig.setEnableDoubleCompression(true);
+        protocolConfig.setDoubleCompressionAccuracy(2);
         bytes = new CodecUtil("").encode(entity);
         protoBytes = protoEntity.toByteArray();
         codecUtil = new CodecUtil(" ");
