@@ -45,7 +45,7 @@ public class ShakeHandHeader extends PlainHeader {
         ByteBuf byteBuf = ch.alloc().buffer(length, length);
         int label = magicNum | (1 << LabelPosition.IS_SHAKE_HAND_HEAD.value());
         label |= protocolConfig.getEnableDoubleCompression() ? (1 << LabelPosition.ENABLE_DOUBLE_COMPRESSION.value()) : 0;
-        label |= protocolConfig.getEnableDoubleCompression() ? ((protocolConfig.getDoubleCompressionAccuracy() & 0x0f) << LabelPosition.DOUBLE_COMPRESSION_ACCURACY.value()) : 0;
+        label |= ((protocolConfig.getDoubleCompressionAccuracy() & 0x0f) << LabelPosition.DOUBLE_COMPRESSION_ACCURACY.value());
         label |= ((protocolConfig.getVariableHeadByteLength() - 1) & 0x03) << LabelPosition.VARIABLE_BYTE_LENGTH.value();
         label |= (ProtocolConfig.convertCharSetToByte(protocolConfig.getCharset()) & 0x07) << LabelPosition.CHARSET.value();
         label |= (protocolConfig.getEnableTimeCompression() ? 1 : 0) << LabelPosition.ENABLE_TIME_COMPRESSION.value();

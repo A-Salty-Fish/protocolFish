@@ -1,5 +1,6 @@
 package util;
 
+import handler.header.PlainHeader;
 import lombok.Builder;
 import lombok.Data;
 
@@ -91,4 +92,13 @@ public class ProtocolConfig {
         return 1;
     }
 
+    public static ProtocolConfig getProtocolFromLabel(int label) {
+        ProtocolConfig config = ProtocolConfig.defaultConfig();
+        config.setEnableDoubleCompression(((label >> PlainHeader.LabelPosition.ENABLE_DOUBLE_COMPRESSION.value()) & 1) != 0);
+        config.setDoubleCompressionAccuracy((label >> PlainHeader.LabelPosition.DOUBLE_COMPRESSION_ACCURACY.value()) & 0x0f);
+        config.setVariableHeadByteLength(((label >> PlainHeader.LabelPosition.VARIABLE_BYTE_LENGTH.value()) & 0x03) + 1);
+        config.setCharset(convertByteToCharset((byte) ((label >> PlainHeader.LabelPosition.CHARSET.value()) & 0x07)));
+        config.setEnableTimeCompression(((label >> PlainHeader.LabelPosition.ENABLE_TIME_COMPRESSION.value()) & 1) != 0);
+        return config;
+    }
 }
