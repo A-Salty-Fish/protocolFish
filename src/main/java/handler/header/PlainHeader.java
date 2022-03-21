@@ -15,6 +15,10 @@ public class PlainHeader {
      */
     public int label;
 
+    public Integer entityId;
+
+    public Object baseEntity;
+
     public enum LabelPosition {
 
         /**
@@ -31,6 +35,36 @@ public class PlainHeader {
          * 1 bit: ack
          */
         IS_PLAIN_BODY_ACK(29),
+
+        /**
+         * 1 bit: double compression enable
+         */
+        ENABLE_DOUBLE_COMPRESSION(28),
+
+        /**
+         * 4 bit: double compression accuracy
+         */
+        DOUBLE_COMPRESSION_ACCURACY(24),
+
+        /**
+         * 2 bit : variable byte length
+         */
+        VARIABLE_BYTE_LENGTH(22),
+
+        /**
+         * 3 bit : charset
+         */
+        CHARSET(19),
+
+        /**
+         * 1 bit : time compressed enable
+         */
+        ENABLE_TIME_COMPRESSION(18),
+
+        /**
+         * 17 bit : magic number for handshake 11011111101010010
+         */
+        MAGIC_NUMBER_FOR_HANDSHAKE(17)
         ;
 
         private int value = 0;

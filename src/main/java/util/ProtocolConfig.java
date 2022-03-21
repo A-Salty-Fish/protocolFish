@@ -17,45 +17,39 @@ import java.nio.charset.StandardCharsets;
 public class ProtocolConfig {
 
     /**
-     * use double compression with loss result
+     * use double compression with loss result, need 1 bit;
      */
     private Boolean enableDoubleCompression;
 
     /**
-     * The number of decimal places to round to when converting to and from
+     * The number of decimal places to round to when converting to and from, need 4 bit;
      */
     private Byte doubleCompressionAccuracy;
 
     /**
-     * constrain the head length for string arg
-     */
-    private Byte stringHeadLength;
-
-    /**
-     * use time compression without lose
-     */
-    private Boolean enableTimeCompression;
-
-    /**
-     * for the time compression, the base time line
-     */
-    private Long timeCompressionBaseline;
-
-    /**
-     * the head length for the string
+     * the head length for the string, need 2 bit; the max length is 4, min is 1;
      */
     private int variableHeadByteLength;
 
     /**
-     * the charset for the string
+     * the charset for the string, need 3 bit;
      */
     private Charset charset;
+
+    /**
+     * use time compression without lose, need 1 bit
+     */
+    private Boolean enableTimeCompression;
+
+    /**
+     * for the time compression, the base timeline, need 64 bit;
+     */
+    private Long timeCompressionBaseline;
 
     public static ProtocolConfig defaultConfig() {
         return ProtocolConfig.builder()
                 .enableDoubleCompression(false)
                 .doubleCompressionAccuracy((byte) 3)
-                .stringHeadLength((byte) 2)
                 .enableTimeCompression(false)
                 .timeCompressionBaseline(0L)
                 .variableHeadByteLength(2)
