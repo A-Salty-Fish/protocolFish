@@ -330,4 +330,14 @@ public class CodeCTest {
     public static byte[] convertIntegerToBytes(int value) {
         return new byte[]{(byte) (value >>> 24), (byte) (value >>> 16), (byte) (value >>> 8), (byte) value};
     }
+
+    @Test
+    public void testCompressDouble() throws Exception {
+        CodecUtil codecUtil = new CodecUtil("");
+        double d = 1.1111111;
+        long ld = codecUtil.compressDoubleToLong(d);
+        System.out.println(ld);
+        double dd = codecUtil.deCompressDoubleFromLong(ld);
+        System.out.println(dd);
+    }
 }

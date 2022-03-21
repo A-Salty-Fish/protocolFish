@@ -476,15 +476,6 @@ public class CodecUtil {
             while (bytesIndex >= 0) {
                 wholeBytes[wholeBytesIndex--] = bytes[bytesIndex--];
             }
-//            if (bytes.length == 8) {
-//                return ByteBuffer.wrap(bytes).getDouble();
-//            } else if (bytes.length == 7) {
-//                wholeBytes[0] = 0;
-//                for (int i = 0; i < 7; i++) {
-//                    wholeBytes[i + 1] = bytes[i];
-//                }
-//                return ByteBuffer.wrap(wholeBytes).getDouble();
-//            }
             return ByteBuffer.wrap(wholeBytes).getDouble();
         } else if (fieldType.equals(boolean.class) || fieldType.equals(Boolean.class)) {
             return bytes[0] != 0;
@@ -545,5 +536,23 @@ public class CodecUtil {
             length |= bytes[i] & 0xFF;
         }
         return length;
+    }
+
+    public Long compressDoubleToLong(double value){
+        int accuracy = protocolConfig.getDoubleCompressionAccuracy();
+        int power = (int) Math.pow(10, accuracy);
+        if (Double.MAX_VALUE / power < value) {
+            return Long.MAX_VALUE;
+        }
+        return Math.round(value * power);
+    }
+
+    public Double deCompressDoubleFromLong(long value) throws Exception {
+        if (value == Long.MAX_VALUE) {
+            return Double.MAX_VALUE;
+        }
+        int accuracy = protocolConfig.getDoubleCompressionAccuracy();
+        int power = (int) Math.pow(10, accuracy);
+        return ((double) value) / power;
     }
 }
