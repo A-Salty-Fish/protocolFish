@@ -27,6 +27,10 @@ public class TestUdpServer {
 
     static ChannelFuture channelFuture;
 
+    public static Channel getChannel() throws Exception {
+        return channelFuture.channel();
+    }
+
     public static void run() throws InterruptedException {
         try {
             Bootstrap b = new Bootstrap();

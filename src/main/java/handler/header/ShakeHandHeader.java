@@ -2,6 +2,7 @@ package handler.header;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
+import util.ProtocolConfig;
 
 /**
  * @author 13090
@@ -12,7 +13,7 @@ import io.netty.channel.Channel;
 
 public class ShakeHandHeader extends PlainHeader {
 
-    public static int magicNum = 0x114514;
+    public static int magicNum = 114514;
 
     public static int length = 4;
 
@@ -38,5 +39,17 @@ public class ShakeHandHeader extends PlainHeader {
 //        boolean isShakeHand = (magicNum & (1 << 31)) != 0;
         magicNum = magicNum & ~(1 << LabelPosition.IS_SHAKE_HAND_HEAD.value());
         return magicNum == ShakeHandHeader.magicNum;
+    }
+
+    public static ByteBuf getShakeHandHeader(Channel ch, ProtocolConfig protocolConfig) {
+        ByteBuf byteBuf = ch.alloc().buffer(length, length);
+        int label = magicNum | (1 << LabelPosition.IS_SHAKE_HAND_HEAD.value());
+        label |= protocolConfig.getEnableDoubleCompression() ? (1 << LabelPosition.ENABLE_DOUBLE_COMPRESSION.value()) : 0;
+        label |= protocolConfig.getEnableDoubleCompression() ? ((protocolConfig.getDoubleCompressionAccuracy() & 0x0f) << LabelPosition.DOUBLE_COMPRESSION_ACCURACY.value()) : 0;
+        label |= ((protocolConfig.getVariableHeadByteLength() - 1) & 0x03) << LabelPosition.VARIABLE_BYTE_LENGTH.value();
+        label |= (ProtocolConfig.convertCharSetToByte(protocolConfig.getCharset()) & 0x07) << LabelPosition.CHARSET.value();
+        label |= (protocolConfig.getEnableTimeCompression() ? 1 : 0) << LabelPosition.ENABLE_TIME_COMPRESSION.value();
+        byteBuf.writeInt(label);
+        return byteBuf;
     }
 }
