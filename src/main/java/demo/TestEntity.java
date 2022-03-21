@@ -3,6 +3,7 @@ package demo;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.junit.Test;
 import proto.TestEntityOuterClass;
 
 import java.time.LocalDate;
@@ -53,6 +54,14 @@ public class TestEntity {
         testEntity.setName2("111111111111111111111111" + random.nextLong() + " " + random.nextLong());
 //        testEntity.setLocalDate(LocalDate.now());
         testEntity.setLocalDateTime(LocalDateTime.now().toInstant(ZoneOffset.of("+8")).toEpochMilli());
+        return testEntity;
+    }
+
+    public static TestEntity getRandomTestEntity(double maxDouble) {
+        Random random = new Random();
+        TestEntity testEntity = getRandomTestEntity();
+        testEntity.setDoubleNum(maxDouble * random.nextDouble());
+        testEntity.setDoubleNum(maxDouble * random.nextDouble());
         return testEntity;
     }
 

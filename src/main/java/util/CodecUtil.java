@@ -287,6 +287,10 @@ public class CodecUtil {
         }
         if (fieldType.equals(double.class) || fieldType.equals(Double.class)) {
             double value = (double) fieldValue;
+            if (protocolConfig.getEnableDoubleCompression()) {
+                Long longValue = compressDoubleToLong(value);
+                return getBytes(longValue, Long.class);
+            }
             long doubleBits = Double.doubleToLongBits(value);
             return new byte[]{(byte) (doubleBits >> 56), (byte) (doubleBits >> 48), (byte) (doubleBits >> 40), (byte) (doubleBits >> 32), (byte) (doubleBits >> 24), (byte) (doubleBits >> 16), (byte) (doubleBits >> 8), (byte) doubleBits};
         }
@@ -482,6 +486,9 @@ public class CodecUtil {
             int bytesIndex = bytes.length - 1;
             while (bytesIndex >= 0) {
                 wholeBytes[wholeBytesIndex--] = bytes[bytesIndex--];
+            }
+            if (protocolConfig.getEnableDoubleCompression()) {
+                return deCompressDoubleFromLong(ByteBuffer.wrap(wholeBytes).getLong());
             }
             return ByteBuffer.wrap(wholeBytes).getDouble();
         } else if (fieldType.equals(boolean.class) || fieldType.equals(Boolean.class)) {

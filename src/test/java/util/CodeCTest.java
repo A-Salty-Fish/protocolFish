@@ -2,18 +2,14 @@ package util;
 
 import com.google.gson.Gson;
 import demo.TestEntity;
-import demo.TestEntity1;
 import org.junit.Assert;
 import org.junit.Test;
 import proto.TestEntityOuterClass;
 
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Random;
 
 /**
  * @author 13090
@@ -319,7 +315,6 @@ public class CodeCTest {
         System.out.println(bytes1.length);
         TestEntity testEntity1 = codecUtil1.decode(bytes1, TestEntity.class);
         System.out.println(new Gson().toJson(testEntity1));
-
         byte[] bytes2 = codecUtil2.encode(testEntity);
         System.out.println(bytes2.length);
         TestEntity testEntity2 = codecUtil2.decode(bytes2, TestEntity.class);
@@ -339,5 +334,45 @@ public class CodeCTest {
         System.out.println(ld);
         double dd = codecUtil.deCompressDoubleFromLong(ld);
         System.out.println(dd);
+    }
+
+    @Test
+    public void testEnableDoubleCompression() throws Exception {
+        CodecUtil.registerClass(TestEntity.class);
+        ProtocolConfig protocolConfig = ProtocolConfig.defaultConfig();
+        protocolConfig.setEnableDoubleCompression(true);
+        protocolConfig.setDoubleCompressionAccuracy(2);
+        CodecUtil codecUtil = new CodecUtil(protocolConfig);
+        TestEntity testEntity = TestEntity.getRandomTestEntity();
+        testEntity.setDoubleNum(1.1111111);
+        testEntity.setDoubleNum2(1.1111111);
+        System.out.println(new Gson().toJson(testEntity));
+        byte[] bytes = codecUtil.encode(testEntity);
+        System.out.println(bytes.length);
+        TestEntity testEntity2 = codecUtil.decode(bytes, TestEntity.class);
+        System.out.println(new Gson().toJson(testEntity2));
+        System.out.println(new CodecUtil("").encode(testEntity).length);
+    }
+
+    @Test
+    public void testCompressionRateWithDoubleCompression() throws Exception {
+        CodecUtil.registerClass(TestEntity.class);
+        ProtocolConfig protocolConfig = ProtocolConfig.defaultConfig();
+        protocolConfig.setEnableDoubleCompression(true);
+        protocolConfig.setDoubleCompressionAccuracy(2);
+        protocolConfig.setVariableHeadByteLength(1);
+        CodecUtil codecUtil = new CodecUtil(protocolConfig);
+
+        long myLength = 0;
+        long protocolLength = 0;
+        for (int i = 0; i < 100000; i++) {
+            TestEntity testEntity = TestEntity.getRandomTestEntity(255.0);
+            myLength += codecUtil.encode(testEntity).length;
+            protocolLength += TestEntity.getProtocolEntityFromTestEntity(testEntity).toByteArray().length;
+        }
+
+        System.out.println("myLength:" + myLength);
+        System.out.println("protocolLength:" + protocolLength);
+        System.out.println("compressionRate:" + (double) myLength / protocolLength);
     }
 }

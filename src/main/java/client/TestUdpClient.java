@@ -72,7 +72,7 @@ public class TestUdpClient {
     public static ProtocolConfig getClientProtocolConfig(){
         ProtocolConfig protocolConfig = ProtocolConfig.defaultConfig();
         protocolConfig.setVariableHeadByteLength(1);
-        protocolConfig.setEnableTimeCompression(true);
+        protocolConfig.setEnableBaseLineCompression(true);
         protocolConfig.setEnableDoubleCompression(true);
         protocolConfig.setDoubleCompressionAccuracy(12);
         return protocolConfig;

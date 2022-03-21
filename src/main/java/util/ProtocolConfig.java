@@ -38,21 +38,20 @@ public class ProtocolConfig {
     private Charset charset;
 
     /**
-     * use time compression without lose, need 1 bit
+     * use baseline compression , need 1 bit
      */
-    private Boolean enableTimeCompression;
+    private Boolean enableBaseLineCompression;
 
     /**
      * for the time compression, the base timeline, need 64 bit;
      */
-    private Long timeCompressionBaseline;
+//    private Long timeCompressionBaseline;
 
     public static ProtocolConfig defaultConfig() {
         return ProtocolConfig.builder()
                 .enableDoubleCompression(false)
                 .doubleCompressionAccuracy(10)
-                .enableTimeCompression(false)
-                .timeCompressionBaseline(0L)
+                .enableBaseLineCompression(false)
                 .variableHeadByteLength(2)
                 .charset(StandardCharsets.UTF_8)
                 .build();
@@ -98,7 +97,7 @@ public class ProtocolConfig {
         config.setDoubleCompressionAccuracy((label >> PlainHeader.LabelPosition.DOUBLE_COMPRESSION_ACCURACY.value()) & 0x0f);
         config.setVariableHeadByteLength(((label >> PlainHeader.LabelPosition.VARIABLE_BYTE_LENGTH.value()) & 0x03) + 1);
         config.setCharset(convertByteToCharset((byte) ((label >> PlainHeader.LabelPosition.CHARSET.value()) & 0x07)));
-        config.setEnableTimeCompression(((label >> PlainHeader.LabelPosition.ENABLE_TIME_COMPRESSION.value()) & 1) != 0);
+        config.setEnableBaseLineCompression(((label >> PlainHeader.LabelPosition.ENABLE_TIME_COMPRESSION.value()) & 1) != 0);
         return config;
     }
 }

@@ -4,7 +4,6 @@ import com.google.gson.Gson;
 import handler.header.ShakeHandHeader;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import server.TestUdpServer;
@@ -65,7 +64,7 @@ public class ProtocolConfigTest {
         protocolConfig.setDoubleCompressionAccuracy(15);
         protocolConfig.setEnableDoubleCompression(false);
         protocolConfig.setVariableHeadByteLength(1);
-        protocolConfig.setEnableTimeCompression(true);
+        protocolConfig.setEnableBaseLineCompression(true);
         protocolConfig.setCharset(StandardCharsets.UTF_16LE);
         buf = ShakeHandHeader.getShakeHandHeader(ch, protocolConfig);
         System.out.println(new Gson().toJson(protocolConfig));
