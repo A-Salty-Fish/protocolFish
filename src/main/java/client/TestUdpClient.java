@@ -9,6 +9,7 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.DatagramPacket;
 import io.netty.channel.socket.nio.NioDatagramChannel;
 import lombok.extern.slf4j.Slf4j;
+import util.ProtocolConfig;
 
 import java.net.InetSocketAddress;
 
@@ -33,9 +34,7 @@ public class TestUdpClient {
 
     public static void main(String[] args) throws InterruptedException {
         run();
-        for (int i = 0; i < 10; i++) {
-            shakeHand();
-        }
+        shakeHand();
 //        shutDown();
     }
 
@@ -64,9 +63,18 @@ public class TestUdpClient {
     }
 
     public static void shakeHand() throws InterruptedException {
-        ByteBuf buf = ShakeHandHeader.getShakeHandHeader(channel);
+        ByteBuf buf = ShakeHandHeader.getShakeHandHeader(channel, getClientProtocolConfig());
         channel.writeAndFlush(new DatagramPacket(
                 buf,
                 new InetSocketAddress(serverHostName, serverPort))).sync();
+    }
+
+    public static ProtocolConfig getClientProtocolConfig(){
+        ProtocolConfig protocolConfig = ProtocolConfig.defaultConfig();
+        protocolConfig.setVariableHeadByteLength(1);
+        protocolConfig.setEnableTimeCompression(true);
+        protocolConfig.setEnableDoubleCompression(true);
+        protocolConfig.setDoubleCompressionAccuracy(12);
+        return protocolConfig;
     }
 }

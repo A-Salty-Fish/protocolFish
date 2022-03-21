@@ -35,10 +35,8 @@ public class ShakeHandHeader extends PlainHeader {
         if (byteBuf.readableBytes() != length) {
             return false;
         }
-        int magicNum = byteBuf.readInt();
-//        boolean isShakeHand = (magicNum & (1 << 31)) != 0;
-        magicNum = magicNum & ~(1 << LabelPosition.IS_SHAKE_HAND_HEAD.value());
-        return magicNum == ShakeHandHeader.magicNum;
+        int magicNum = byteBuf.getInt(0);
+        return (magicNum & 0x1ffff) == ShakeHandHeader.magicNum;
     }
 
     public static ByteBuf getShakeHandHeader(Channel ch, ProtocolConfig protocolConfig) {

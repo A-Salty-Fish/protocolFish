@@ -22,4 +22,8 @@ public class ServerStoreConfig {
     public static ProtocolConfig get(String key) {
         return protocolConfigMap.get(key);
     }
+
+    public static String getKey(String ip) {
+        return ip;
+    }
 }
