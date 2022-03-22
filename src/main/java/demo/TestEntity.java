@@ -65,6 +65,30 @@ public class TestEntity {
         return testEntity;
     }
 
+    public static TestEntity getRandomTestEntity(double maxDouble, int stringLength) {
+        Random random = new Random();
+        TestEntity testEntity = getRandomTestEntity();
+        testEntity.setDoubleNum(maxDouble * random.nextDouble());
+        testEntity.setDoubleNum(maxDouble * random.nextDouble());
+        testEntity.setName(testEntity.getName().substring(0, stringLength));
+        testEntity.setName2(testEntity.getName().substring(0, stringLength));
+        return testEntity;
+    }
+
+
+    public static TestEntity getNextNearRandomTestEntity(TestEntity testEntity) {
+        TestEntity nextTestEntity = getRandomTestEntity(255,7);
+        Random random = new Random();
+        nextTestEntity.setIntNum(testEntity.getIntNum() + random.nextInt(5) - 2);
+        nextTestEntity.setIntNum2(testEntity.getIntNum2() + random.nextInt(5) - 2);
+        nextTestEntity.setLongNum(testEntity.getLongNum() + random.nextInt(10) - 5);
+        nextTestEntity.setLongNum2(testEntity.getLongNum2() + random.nextInt(10) - 5);
+        nextTestEntity.setDoubleNum(testEntity.getDoubleNum() + random.nextDouble() - 0.5);
+        nextTestEntity.setDoubleNum2(testEntity.getDoubleNum2() + random.nextDouble() - 0.5);
+        nextTestEntity.setLocalDateTime(testEntity.getLocalDateTime() + random.nextInt(10));
+        return nextTestEntity;
+    }
+
     public static TestEntityOuterClass.TestEntity getProtocolEntityFromTestEntity(TestEntity testEntity) {
         return TestEntityOuterClass.TestEntity.newBuilder()
                 .setDoubleNum(testEntity.getDoubleNum())

@@ -11,6 +11,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
 
 /**
  * @author 13090
@@ -405,7 +406,7 @@ public class CodeCTest {
 //        protocolConfig.setDoubleCompressionAccuracy(2);
         protocolConfig.setVariableHeadByteLength(1);
         protocolConfig.setEnableBaseLineCompression(true);
-        TestEntity testEntity = TestEntity.getRandomTestEntity();
+        TestEntity testEntity = TestEntity.getRandomTestEntity(255.0, 1);
         System.out.println(new Gson().toJson(testEntity));
         protocolConfig.setBaseLine(testEntity);
         CodecUtil codecUtil = new CodecUtil(protocolConfig);
@@ -422,5 +423,36 @@ public class CodeCTest {
         byte[] bytes2 = codecUtil2.encode(testEntity);
         System.out.println(bytes2.length);
         System.out.println(new Gson().toJson(codecUtil2.decode(bytes2, TestEntity.class)));
+    }
+
+    @Test
+    public void testCompressionRateWithBaseLineCompression() throws Exception {
+        CodecUtil.registerClass(TestEntity.class);
+        ProtocolConfig protocolConfig = ProtocolConfig.defaultConfig();
+        protocolConfig.setEnableBaseLineCompression(true);
+        TestEntity testEntity = TestEntity.getRandomTestEntity(255.0, 7);
+        protocolConfig.setBaseLine(testEntity);
+        protocolConfig.setVariableHeadByteLength(1);
+        CodecUtil codecUtil = new CodecUtil(protocolConfig);
+        Random random = new Random();
+
+        long myLength = 0;
+        long protocolLength = 0;
+        long jsonLength = 0;
+        long xmlLength = 0;
+        for (int i = 0; i < 1000; i++) {
+            TestEntity nextNearRandomTestEntity = TestEntity.getNextNearRandomTestEntity(testEntity);
+            myLength += codecUtil.encode(nextNearRandomTestEntity).length;
+            protocolLength += TestEntity.getProtocolEntityFromTestEntity(nextNearRandomTestEntity).toByteArray().length;
+            jsonLength += new Gson().toJson(nextNearRandomTestEntity).getBytes().length;
+            TestXmlEntity testXmlEntity = TestXmlEntity.TestXmlEntityFromTestEntity(nextNearRandomTestEntity);
+            xmlLength += XmlUtil.convertToXml(testXmlEntity).getBytes().length;
+        }
+
+        System.out.println("myLength:" + myLength);
+        System.out.println("protocolLength:" + protocolLength);
+        System.out.println("jsonLength:" + jsonLength);
+        System.out.println("xmlLength:" + xmlLength);
+//        System.out.println("compressionRate:" + (double) myLength / protocolLength);
     }
 }
