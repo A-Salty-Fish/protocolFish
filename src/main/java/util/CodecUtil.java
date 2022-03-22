@@ -4,8 +4,6 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.time.*;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -314,9 +312,79 @@ public class CodecUtil {
         return new byte[0];
     }
 
+    public byte[] getBytes(Object fieldValue, Object baseLineValue, Class<?> fieldType) {
+        if (fieldType.equals(byte.class) || fieldType.equals(Byte.class)) {
+            byte fieldV = (byte) fieldValue;
+            byte baseLineV = (byte) baseLineValue;
+            fieldV ^= baseLineV;
+            return new byte[]{(byte) (fieldV)};
+        }
+        if (fieldType.equals(short.class) || fieldType.equals(Short.class) || fieldType.equals(char.class) || fieldType.equals(Character.class)) {
+            short fieldV = (short) fieldValue;
+            short baseLineV = (short) baseLineValue;
+            fieldV ^= baseLineV;
+            return new byte[]{(byte) (fieldV >> 8), (byte) fieldV};
+        }
+        if (fieldType.equals(int.class) || fieldType.equals(Integer.class)) {
+            int value = (int) fieldValue;
+            int baseLineV = (int) baseLineValue;
+            value ^= baseLineV;
+            return new byte[]{(byte) (value >> 24), (byte) (value >> 16), (byte) (value >> 8), (byte) value};
+        }
+        if (fieldType.equals(long.class) || fieldType.equals(Long.class)) {
+            long value = (long) fieldValue;
+            long baseLineV = (long) baseLineValue;
+            value ^= baseLineV;
+            return new byte[]{(byte) (value >> 56), (byte) (value >> 48), (byte) (value >> 40), (byte) (value >> 32), (byte) (value >> 24), (byte) (value >> 16), (byte) (value >> 8), (byte) value};
+        }
+        if (fieldType.equals(float.class) || fieldType.equals(Float.class)) {
+            float value = (float) fieldValue;
+            int floatBits = Float.floatToIntBits(value);
+            int baseLineV = Float.floatToIntBits((float) baseLineValue);
+            floatBits ^= baseLineV;
+            return new byte[]{(byte) (floatBits >> 24), (byte) (floatBits >> 16), (byte) (floatBits >> 8), (byte) floatBits};
+        }
+        if (fieldType.equals(double.class) || fieldType.equals(Double.class)) {
+            double value = (double) fieldValue;
+            double baseLineV = (double) baseLineValue;
+            if (protocolConfig.getEnableDoubleCompression()) {
+                Long longValue = compressDoubleToLong(value);
+                Long baseLineLongValue = compressDoubleToLong(baseLineV);
+                return getBytes(longValue, baseLineLongValue, Long.class);
+            }
+            long doubleBits = Double.doubleToLongBits(value);
+            long baseLineDoubleBits = Double.doubleToLongBits(baseLineV);
+            doubleBits ^= baseLineDoubleBits;
+            return new byte[]{(byte) (doubleBits >> 56), (byte) (doubleBits >> 48), (byte) (doubleBits >> 40), (byte) (doubleBits >> 32), (byte) (doubleBits >> 24), (byte) (doubleBits >> 16), (byte) (doubleBits >> 8), (byte) doubleBits};
+        }
+        if (fieldType.equals(boolean.class) || fieldType.equals(Boolean.class)) {
+            return new byte[]{(byte) ((boolean) fieldValue ? 1 : 0)};
+        }
+        if (fieldType.equals(LocalDateTime.class)) {
+            LocalDateTime value = (LocalDateTime) fieldValue;
+            long epochMilli = value.toInstant(ZoneOffset.of("+8")).toEpochMilli();
+            return new byte[]{(byte) (epochMilli >> 56), (byte) (epochMilli >> 48), (byte) (epochMilli >> 40), (byte) (epochMilli >> 32), (byte) (epochMilli >> 24), (byte) (epochMilli >> 16), (byte) (epochMilli >> 8), (byte) epochMilli};
+        }
+        if (fieldType.equals(LocalDate.class)) {
+            LocalDate value = (LocalDate) fieldValue;
+            long epochMilli = value.atStartOfDay(ZoneOffset.ofHours(8)).toInstant().toEpochMilli();
+            return new byte[]{(byte) (epochMilli >> 56), (byte) (epochMilli >> 48), (byte) (epochMilli >> 40), (byte) (epochMilli >> 32), (byte) (epochMilli >> 24), (byte) (epochMilli >> 16), (byte) (epochMilli >> 8), (byte) epochMilli};
+        }
+        if (fieldType.equals(String.class)) {
+            String value = (String) fieldValue;
+            return value.getBytes(protocolConfig.getCharset());
+        }
+        return new byte[0];
+    }
+
     public byte[] getBytes(Object obj, Field field) throws IllegalAccessException {
         Class<?> fieldType = field.getType();
-        return getBytes(field.get(obj), fieldType);
+        Object baseLineObj = protocolConfig.getBaseLine();
+        if (!protocolConfig.getEnableBaseLineCompression() || baseLineObj == null) {
+            return getBytes(field.get(obj), fieldType);
+        } else {
+            return getBytes(field.get(obj), field.get(baseLineObj), fieldType);
+        }
     }
 
     public static enum FieldType {
@@ -556,7 +624,7 @@ public class CodecUtil {
         return length;
     }
 
-    public Long compressDoubleToLong(double value){
+    public Long compressDoubleToLong(double value) {
         int accuracy = protocolConfig.getDoubleCompressionAccuracy();
         int power = (int) Math.pow(10, accuracy);
         if (Double.MAX_VALUE / power < value) {

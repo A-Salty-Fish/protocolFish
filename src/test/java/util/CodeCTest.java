@@ -383,4 +383,17 @@ public class CodeCTest {
         System.out.println("xmlLength:" + xmlLength);
 //        System.out.println("compressionRate:" + (double) myLength / protocolLength);
     }
+
+    @Test
+    public void testXorDouble() throws Exception {
+        double d = 1.1111111;
+        long ld = Double.doubleToLongBits(d);
+        double c = 1.111111111;
+        long lc = Double.doubleToLongBits(c);
+        long ll = ld ^ lc;
+        System.out.println(ll);
+        System.out.println(Double.longBitsToDouble(ll));
+        System.out.println(Double.longBitsToDouble(ll ^ ld));
+        System.out.println(Double.longBitsToDouble(ll ^ lc));
+    }
 }

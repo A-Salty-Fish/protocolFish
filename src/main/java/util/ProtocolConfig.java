@@ -43,9 +43,9 @@ public class ProtocolConfig {
     private Boolean enableBaseLineCompression;
 
     /**
-     * for the time compression, the base timeline, need 64 bit;
+     * for the baseline compression;
      */
-//    private Long timeCompressionBaseline;
+    private Object baseLine;
 
     public static ProtocolConfig defaultConfig() {
         return ProtocolConfig.builder()
@@ -54,6 +54,7 @@ public class ProtocolConfig {
                 .enableBaseLineCompression(false)
                 .variableHeadByteLength(2)
                 .charset(StandardCharsets.UTF_8)
+                .baseLine(null)
                 .build();
     }
 
