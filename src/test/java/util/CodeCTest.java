@@ -396,4 +396,31 @@ public class CodeCTest {
         System.out.println(Double.longBitsToDouble(ll ^ ld));
         System.out.println(Double.longBitsToDouble(ll ^ lc));
     }
+
+    @Test
+    public void testBaseLine() throws Exception {
+        CodecUtil.registerClass(TestEntity.class);
+        ProtocolConfig protocolConfig = ProtocolConfig.defaultConfig();
+//        protocolConfig.setEnableDoubleCompression(true);
+//        protocolConfig.setDoubleCompressionAccuracy(2);
+        protocolConfig.setVariableHeadByteLength(1);
+        protocolConfig.setEnableBaseLineCompression(true);
+        TestEntity testEntity = TestEntity.getRandomTestEntity();
+        System.out.println(new Gson().toJson(testEntity));
+        protocolConfig.setBaseLine(testEntity);
+        CodecUtil codecUtil = new CodecUtil(protocolConfig);
+        byte[] bytes = codecUtil.encode(testEntity);
+        System.out.println(bytes.length);
+        System.out.println(new Gson().toJson(codecUtil.decode(bytes, TestEntity.class)));
+
+        ProtocolConfig protocolConfig2 = ProtocolConfig.defaultConfig();
+//        protocolConfig.setEnableDoubleCompression(true);
+//        protocolConfig.setDoubleCompressionAccuracy(2);
+        protocolConfig.setVariableHeadByteLength(1);
+        protocolConfig.setEnableBaseLineCompression(false);
+        CodecUtil codecUtil2 = new CodecUtil(protocolConfig2);
+        byte[] bytes2 = codecUtil2.encode(testEntity);
+        System.out.println(bytes2.length);
+        System.out.println(new Gson().toJson(codecUtil2.decode(bytes2, TestEntity.class)));
+    }
 }

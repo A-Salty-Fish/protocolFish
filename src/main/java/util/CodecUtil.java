@@ -430,7 +430,14 @@ public class CodecUtil {
         int valueLength = getLengthFromHead(bytes, headLength, offset) + 1;
         offset += headLength;
         byte[] valueBytes = getValueBytes(bytes, offset, valueLength);
-        field.set(obj, convertBytesToObject(valueBytes, field));
+        Object rowObj = convertBytesToObject(valueBytes, field);
+        if (protocolConfig.getEnableBaseLineCompression() && protocolConfig.getBaseLine() != null) {
+            Object baseLineObj = field.get(protocolConfig.getBaseLine());
+            Object fieldValue = convertObjectWithBaseLine(rowObj, baseLineObj);
+            field.set(obj, fieldValue);
+        } else {
+            field.set(obj, rowObj);
+        }
         return headLength + valueLength * 8;
     }
 
@@ -467,6 +474,52 @@ public class CodecUtil {
             }
         }
         return result;
+    }
+
+    public Object convertObjectWithBaseLine(Object rowObj, Object baseObj) {
+        Class<?> fieldType = rowObj.getClass();
+        if (fieldType.equals(byte.class) || fieldType.equals(Byte.class)) {
+            byte value = (byte) rowObj;
+            byte baseValue = (byte) baseObj;
+            return value ^ baseValue;
+        } else if (fieldType.equals(short.class) || fieldType.equals(Short.class)) {
+            short value = (short) rowObj;
+            short baseValue = (short) baseObj;
+            return value ^ baseValue;
+        } else if (fieldType.equals(char.class) || fieldType.equals(Character.class)) {
+            char value = (char) rowObj;
+            char baseValue = (char) baseObj;
+            return value ^ baseValue;
+        } else if (fieldType.equals(int.class) || fieldType.equals(Integer.class)) {
+            int value = (int) rowObj;
+            int baseValue = (int) baseObj;
+            return value ^ baseValue;
+        } else if (fieldType.equals(long.class) || fieldType.equals(Long.class)) {
+            long value = (long) rowObj;
+            long baseValue = (long) baseObj;
+            return value ^ baseValue;
+        } else if (fieldType.equals(float.class) || fieldType.equals(Float.class)) {
+            float value = (float) rowObj;
+            float baseValue = (float) baseObj;
+            int intValue = Float.floatToIntBits(value);
+            int intBaseValue = Float.floatToIntBits(baseValue);
+            return Float.intBitsToFloat(intValue ^ intBaseValue);
+        } else if (fieldType.equals(double.class) || fieldType.equals(Double.class)) {
+            double value = (double) rowObj;
+            double baseValue = (double) baseObj;
+            long longValue = Double.doubleToLongBits(value);
+            long longBaseValue = Double.doubleToLongBits(baseValue);
+            return Double.longBitsToDouble(longValue ^ longBaseValue);
+        } else if (fieldType.equals(boolean.class) || fieldType.equals(Boolean.class)) {
+            return (boolean) rowObj;
+        } else if (fieldType.equals(LocalDateTime.class)) {
+            return (LocalDateTime) rowObj;
+        } else if (fieldType.equals(LocalDate.class)) {
+            return (LocalDate) rowObj;
+        } else if (fieldType.equals(String.class)) {
+            return (String) rowObj;
+        }
+        return null;
     }
 
     public Object convertBytesToObject(byte[] bytes, Class<?> fieldType) throws Exception {
