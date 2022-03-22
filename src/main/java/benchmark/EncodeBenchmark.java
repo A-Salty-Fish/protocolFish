@@ -54,13 +54,15 @@ public class EncodeBenchmark {
     @Setup(Level.Trial)
     public void init() throws Exception {
         CodecUtil.registerClass(TestEntity.class);
-        entity = TestEntity.getRandomTestEntity(255.0);
+        entity = TestEntity.getRandomTestEntity(255.0,7);
         protoEntity = getProtocolEntityFromTestEntity(entity);
         xmlEntity = TestXmlEntity.TestXmlEntityFromTestEntity(entity);
         ProtocolConfig protocolConfig = ProtocolConfig.defaultConfig();
         protocolConfig.setVariableHeadByteLength(1);
-        protocolConfig.setEnableDoubleCompression(true);
-        protocolConfig.setDoubleCompressionAccuracy(2);
+        protocolConfig.setEnableBaseLineCompression(true);
+        protocolConfig.setBaseLine(entity);
+//        protocolConfig.setEnableDoubleCompression(true);
+//        protocolConfig.setDoubleCompressionAccuracy(2);
         bytes = new CodecUtil("").encode(entity);
         protoBytes = protoEntity.toByteArray();
         codecUtil = new CodecUtil(" ");
@@ -133,7 +135,7 @@ public class EncodeBenchmark {
         Options options = new OptionsBuilder()
                 .include(EncodeBenchmark.class.getSimpleName())
                 .resultFormat(ResultFormatType.JSON)
-                .result("jmh-encode.json")
+                .result("jmh-encode-with-baseLine.json")
                 .measurementIterations(1)
                 .measurementTime(TimeValue.seconds(5))
                 .threads(12)

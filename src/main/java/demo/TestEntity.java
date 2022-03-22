@@ -79,13 +79,13 @@ public class TestEntity {
     public static TestEntity getNextNearRandomTestEntity(TestEntity testEntity) {
         TestEntity nextTestEntity = getRandomTestEntity(255,7);
         Random random = new Random();
-        nextTestEntity.setIntNum(testEntity.getIntNum() + random.nextInt(5) - 2);
-        nextTestEntity.setIntNum2(testEntity.getIntNum2() + random.nextInt(5) - 2);
-        nextTestEntity.setLongNum(testEntity.getLongNum() + random.nextInt(10) - 5);
-        nextTestEntity.setLongNum2(testEntity.getLongNum2() + random.nextInt(10) - 5);
+        nextTestEntity.setIntNum(testEntity.getIntNum() + random.nextInt(3) - 2);
+        nextTestEntity.setIntNum2(testEntity.getIntNum2() + random.nextInt(3) - 2);
+        nextTestEntity.setLongNum(testEntity.getLongNum() + random.nextInt(5) - 2);
+        nextTestEntity.setLongNum2(testEntity.getLongNum2() + random.nextInt(5) - 2);
         nextTestEntity.setDoubleNum(testEntity.getDoubleNum() + random.nextDouble() - 0.5);
         nextTestEntity.setDoubleNum2(testEntity.getDoubleNum2() + random.nextDouble() - 0.5);
-        nextTestEntity.setLocalDateTime(testEntity.getLocalDateTime() + random.nextInt(10));
+        nextTestEntity.setLocalDateTime(testEntity.getLocalDateTime() + random.nextInt(2));
         return nextTestEntity;
     }
 
