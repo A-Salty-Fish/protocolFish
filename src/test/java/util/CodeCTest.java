@@ -407,10 +407,12 @@ public class CodeCTest {
         protocolConfig.setVariableHeadByteLength(1);
         protocolConfig.setEnableBaseLineCompression(true);
         TestEntity testEntity = TestEntity.getRandomTestEntity(255.0, 1);
-        System.out.println(new Gson().toJson(testEntity));
         protocolConfig.setBaseLine(testEntity);
         CodecUtil codecUtil = new CodecUtil(protocolConfig);
-        byte[] bytes = codecUtil.encode(testEntity);
+
+        TestEntity testEntity2 = TestEntity.getNextNearRandomTestEntity(testEntity);
+        System.out.println(new Gson().toJson(testEntity2));
+        byte[] bytes = codecUtil.encode(testEntity2);
         System.out.println(bytes.length);
         System.out.println(new Gson().toJson(codecUtil.decode(bytes, TestEntity.class)));
 
@@ -420,7 +422,7 @@ public class CodeCTest {
         protocolConfig.setVariableHeadByteLength(1);
         protocolConfig.setEnableBaseLineCompression(false);
         CodecUtil codecUtil2 = new CodecUtil(protocolConfig2);
-        byte[] bytes2 = codecUtil2.encode(testEntity);
+        byte[] bytes2 = codecUtil2.encode(testEntity2);
         System.out.println(bytes2.length);
         System.out.println(new Gson().toJson(codecUtil2.decode(bytes2, TestEntity.class)));
     }
