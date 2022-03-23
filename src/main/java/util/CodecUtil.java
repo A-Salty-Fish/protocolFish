@@ -203,9 +203,16 @@ public class CodecUtil {
 
     private static final ConcurrentHashMap<Integer, Class<?>> identityToClass = new ConcurrentHashMap<>();
 
+    public static Integer getIdentityByClass(Class<?> clazz) {
+        return classToIdentity.get(clazz);
+    }
+
+    public Class<?> getClassByIdentity(int identity) {
+        return identityToClass.get(identity);
+    }
 
     public static void registerClass(Class<?> clazz) {
-        int classIdentity = clazz.hashCode() & ByteUtil.getMask(PlainBodyHeader.PlainBodyLabelPosition.CLASS_IDENTITY.value());
+        int classIdentity = clazz.getName().hashCode() & ByteUtil.getMask(PlainBodyHeader.PlainBodyLabelPosition.CLASS_IDENTITY.value());
         classToIdentity.put(clazz, classIdentity);
         identityToClass.put(classIdentity, clazz);
         constantLengthFieldMap.put(clazz, new ArrayList<>(16));

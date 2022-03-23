@@ -3,6 +3,7 @@ package handler.header;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import util.ByteUtil;
+import util.CodecUtil;
 
 import java.nio.ByteBuffer;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -42,6 +43,23 @@ public class PlainBodyHeader extends PlainHeader {
         return byteBuf;
     }
 
+    public static ByteBuf getPlainBodyHeader(Channel ch, boolean needAck, Class<?> entity) {
+        ByteBuf byteBuf = ch.alloc().buffer(length, length);
+        int plainBodyLabel = 0;
+        plainBodyLabel |= 1 << PlainHeader.LabelPosition.IS_PLAIN_BODY_HEAD.value();
+        if (needAck) {
+            plainBodyLabel |= 1 << PlainBodyLabelPosition.NEED_ACK.value();
+            plainBodyLabel |= getSequenceNumber();
+        }
+        Integer identity = CodecUtil.getIdentityByClass(entity);
+        if (identity == null) {
+            identity = 0;
+        }
+        plainBodyLabel |= identity << PlainBodyLabelPosition.SEQUENCE_NUMBER.value();
+        byteBuf.writeInt(plainBodyLabel);
+        return byteBuf;
+    }
+
     public static boolean isPlainBodyHeader(ByteBuf byteBuf) {
         return (byteBuf.getInt(0) & (1 << PlainHeader.LabelPosition.IS_PLAIN_BODY_HEAD.value())) != 0;
     }
@@ -64,7 +82,7 @@ public class PlainBodyHeader extends PlainHeader {
         }
     }
 
-    public synchronized static int getClassIdentity(int label) {
+    public static int getClassIdentityFromLabel(int label) {
         return (label >> PlainBodyLabelPosition.SEQUENCE_NUMBER.value()) & ByteUtil.getMask(PlainBodyLabelPosition.CLASS_IDENTITY.value());
     }
 
