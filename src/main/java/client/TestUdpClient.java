@@ -1,14 +1,20 @@
 package client;
 
+import com.google.gson.Gson;
+import demo.TestEntity;
+import handler.body.PlainBody;
 import handler.header.PlainBodyHeader;
 import handler.header.ShakeHandHeader;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
-import io.netty.channel.*;
+import io.netty.channel.Channel;
+import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.DatagramPacket;
 import io.netty.channel.socket.nio.NioDatagramChannel;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.Test;
+import util.CodecUtil;
 import util.ProtocolConfig;
 
 import java.net.InetSocketAddress;
@@ -35,10 +41,12 @@ public class TestUdpClient {
     public static void main(String[] args) throws InterruptedException {
         run();
         shakeHand();
+        sendBody();
 //        shutDown();
     }
 
     public static void run() throws InterruptedException {
+        CodecUtil.registerClass(TestEntity.class);
         try {
             Bootstrap b = new Bootstrap();
             b.group(group).channel(NioDatagramChannel.class)
@@ -70,11 +78,24 @@ public class TestUdpClient {
                 new InetSocketAddress(serverHostName, serverPort))).sync();
     }
 
-    public static ProtocolConfig getClientProtocolConfig(){
+    public static void sendBody() throws InterruptedException {
+        ByteBuf bodyHeader = PlainBodyHeader.getPlainBodyHeader(channel, true, TestEntity.class);
+        TestEntity testEntity = TestEntity.getRandomTestEntity();
+        ByteBuf body = PlainBody.getPlainBodyFromObject(channel, testEntity, getClientProtocolConfig());
+        log.info("send body: {}", new Gson().toJson(testEntity));
+        ByteBuf buf = channel.alloc().buffer(bodyHeader.readableBytes() + body.readableBytes());
+        buf.writeBytes(bodyHeader);
+        buf.writeBytes(body);
+        channel.writeAndFlush(new DatagramPacket(
+                buf,
+                new InetSocketAddress(serverHostName, serverPort))).sync();
+    }
+
+    public static ProtocolConfig getClientProtocolConfig() {
         ProtocolConfig protocolConfig = ProtocolConfig.defaultConfig();
-        protocolConfig.setVariableHeadByteLength(1);
-        protocolConfig.setEnableBaseLineCompression(true);
-        protocolConfig.setEnableDoubleCompression(true);
+        protocolConfig.setVariableHeadByteLength(4);
+        protocolConfig.setEnableBaseLineCompression(false);
+        protocolConfig.setEnableDoubleCompression(false);
         protocolConfig.setDoubleCompressionAccuracy(12);
         return protocolConfig;
     }

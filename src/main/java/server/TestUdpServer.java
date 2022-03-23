@@ -1,10 +1,12 @@
 package server;
 
+import demo.TestEntity;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioDatagramChannel;
 import lombok.extern.slf4j.Slf4j;
+import util.CodecUtil;
 
 import java.util.concurrent.TimeUnit;
 
@@ -32,6 +34,7 @@ public class TestUdpServer {
     }
 
     public static void run() throws InterruptedException {
+        CodecUtil.registerClass(TestEntity.class);
         try {
             Bootstrap b = new Bootstrap();
             b.group(group)

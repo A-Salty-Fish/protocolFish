@@ -2,6 +2,7 @@ package handler.body.handler;
 
 import com.google.gson.Gson;
 import handler.RequestHandler;
+import handler.body.PlainBody;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.socket.DatagramPacket;
 import lombok.extern.slf4j.Slf4j;
@@ -34,15 +35,9 @@ public class PlainBodyHandler implements RequestHandler {
 
     @Override
     public void handler(ChannelHandlerContext ctx, DatagramPacket packet) {
-        byte[] body = packet.content().readBytes(packet.content().readableBytes()).array();
         InetSocketAddress address = packet.sender();
         ProtocolConfig protocolConfig = ServerStoreConfig.get(ServerStoreConfig.getKey(address.getAddress().getHostAddress()));
-        CodecUtil codecUtil = new CodecUtil(protocolConfig);
-        try {
-            Object entity = codecUtil.decode(body, entityClass);
-            log.info("收到消息实体：{}", new Gson().toJson(entity));
-        } catch (Exception e) {
-            log.error("解析数据异常:", e);
-        }
+        Object obj = PlainBody.getObjectFromPlainBody(packet.content(), protocolConfig, entityClass);
+        log.info("accept data：{}", new Gson().toJson(obj));
     }
 }
