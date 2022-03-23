@@ -457,4 +457,18 @@ public class CodeCTest {
         System.out.println("xmlLength:" + xmlLength);
 //        System.out.println("compressionRate:" + (double) myLength / protocolLength);
     }
+
+    @Test
+    public void testProtobufUtil() throws IllegalAccessException {
+        long exactLength = 0;
+        long myLength = 0;
+        for (int i = 0; i < 100000; i++) {
+            TestEntity testEntity = TestEntity.getRandomTestEntity();
+            TestEntityOuterClass.TestEntity testEntityOuterClass = TestEntity.getProtocolEntityFromTestEntity(testEntity);
+            exactLength += testEntityOuterClass.toByteArray().length;
+            myLength += ProtobufUtil.countBytes(testEntity);
+//            System.out.println(testEntityOuterClass.toByteArray().length + ":" +ProtobufUtil.countBytes(testEntity));
+        }
+        System.out.println( (double)exactLength / myLength);
+    }
 }

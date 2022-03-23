@@ -37,7 +37,7 @@ public class TestEntity {
 
     public Double doubleNum2;
 
-//    public LocalDate localDate;
+    public Long localDate;
 
     public Long localDateTime;
 
@@ -52,7 +52,7 @@ public class TestEntity {
         testEntity.setLongNum2((long) random.nextInt(256 * 256 * 256));
         testEntity.setName("test" + random.nextLong());
         testEntity.setName2("111111111111111111111111" + random.nextLong() + " " + random.nextLong());
-//        testEntity.setLocalDate(LocalDate.now());
+        testEntity.setLocalDate(LocalDateTime.now().toInstant(ZoneOffset.of("+8")).toEpochMilli());
         testEntity.setLocalDateTime(LocalDateTime.now().toInstant(ZoneOffset.of("+8")).toEpochMilli());
         return testEntity;
     }
@@ -99,7 +99,7 @@ public class TestEntity {
                 .setLongNum2(testEntity.getLongNum2())
                 .setName(testEntity.getName())
                 .setName2(testEntity.getName2())
-//                .setLocalDate(testEntity.getLocalDate().toEpochDay())
+                .setLocalDate(testEntity.getLocalDateTime())
                 .setLocalDateTime(testEntity.getLocalDateTime())
                 .build();
     }
