@@ -64,7 +64,9 @@ public class PlainBodyHeader extends PlainHeader {
         }
     }
 
-
+    public static synchronized void clearSequence() {
+        count = 0;
+    }
 
     public enum PlainBodyLabelPosition {
 

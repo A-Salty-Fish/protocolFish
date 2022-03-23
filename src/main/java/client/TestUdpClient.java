@@ -63,6 +63,7 @@ public class TestUdpClient {
     }
 
     public static void shakeHand() throws InterruptedException {
+        PlainBodyHeader.clearSequence();
         ByteBuf buf = ShakeHandHeader.getShakeHandHeader(channel, getClientProtocolConfig());
         channel.writeAndFlush(new DatagramPacket(
                 buf,

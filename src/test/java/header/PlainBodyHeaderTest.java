@@ -26,6 +26,9 @@ public class PlainBodyHeaderTest {
         for (int i = 0; i < 20; i++) {
             ByteBuf byteBuf = PlainBodyHeader.getPlainBodyHeader(TestUdpServer.getChannel());
             int label = byteBuf.readInt();
+            if (i == 10) {
+                PlainBodyHeader.clearSequence();
+            }
             System.out.println(CodeCTest.bytesToString(CodeCTest.convertIntegerToBytes(label)) + " :" + PlainBodyHeader.getSequenceNumberFromLabel(label));
         }
     }
