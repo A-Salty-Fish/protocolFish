@@ -8,6 +8,31 @@ package util;
  */
 
 public class ByteUtil {
+    public static String byteToString(byte b) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < 8; i++) {
+            sb.append((b >> i) & 1);
+        }
+        return sb.reverse().toString();
+    }
+
+    public static String bytesToString(byte[] bytes) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < bytes.length; i++) {
+            sb.append(byteToString(bytes[i]));
+            sb.append(" ");
+        }
+        return sb.toString();
+    }
+
+    public static byte[] convertIntegerToBytes(int value) {
+        return new byte[]{(byte) (value >>> 24), (byte) (value >>> 16), (byte) (value >>> 8), (byte) value};
+    }
+
+    public static String convertIntegerToBytesString(int value) {
+        return bytesToString(convertIntegerToBytes(value));
+    }
+
     public static int getMask(int i) {
         switch (i) {
             case 1:
