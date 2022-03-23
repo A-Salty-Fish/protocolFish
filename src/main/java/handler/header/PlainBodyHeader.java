@@ -46,8 +46,8 @@ public class PlainBodyHeader extends PlainHeader {
         return (byteBuf.getInt(0) & (1 << PlainHeader.LabelPosition.IS_PLAIN_BODY_HEAD.value())) != 0;
     }
 
-    public static boolean needAck(ByteBuffer byteBuf) {
-        int plainBodyLabel = byteBuf.getInt(0);
+    public static boolean needAck(int plainBodyLabel) {
+//        int plainBodyLabel = byteBuf.getInt(0);
         return (plainBodyLabel & (1 << PlainBodyLabelPosition.NEED_ACK.value())) != 0;
     }
 
@@ -62,6 +62,10 @@ public class PlainBodyHeader extends PlainHeader {
         } else {
             return count++;
         }
+    }
+
+    public synchronized static int getClassIdentity(int label) {
+        return (label >> PlainBodyLabelPosition.SEQUENCE_NUMBER.value()) & ByteUtil.getMask(PlainBodyLabelPosition.CLASS_IDENTITY.value());
     }
 
     public static synchronized void clearSequence() {
@@ -79,6 +83,11 @@ public class PlainBodyHeader extends PlainHeader {
          * 1 bit: check if the request need ack
          */
         NEED_ACK(29),
+
+        /**
+         * 10 bits: class Identity number
+         */
+        CLASS_IDENTITY(10),
 
         /**
          * 16 bit : sequence number

@@ -1,5 +1,6 @@
 package util;
 
+import handler.header.PlainBodyHeader;
 import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.Field;
@@ -198,8 +199,15 @@ public class CodecUtil {
 
     private static final ConcurrentHashMap<Class<?>, List<Field>> variableLengthFieldMap = new ConcurrentHashMap<>();
 
+    private static final ConcurrentHashMap<Class<?>, Integer> classToIdentity = new ConcurrentHashMap<>();
+
+    private static final ConcurrentHashMap<Integer, Class<?>> identityToClass = new ConcurrentHashMap<>();
+
 
     public static void registerClass(Class<?> clazz) {
+        int classIdentity = clazz.hashCode() & ByteUtil.getMask(PlainBodyHeader.PlainBodyLabelPosition.CLASS_IDENTITY.value());
+        classToIdentity.put(clazz, classIdentity);
+        identityToClass.put(classIdentity, clazz);
         constantLengthFieldMap.put(clazz, new ArrayList<>(16));
         variableLengthFieldMap.put(clazz, new ArrayList<>(16));
         for (Field filed : clazz.getDeclaredFields()) {
