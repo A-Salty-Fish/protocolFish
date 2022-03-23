@@ -28,6 +28,11 @@ public class AckHeader {
         return byteBuf;
     }
 
+    public static boolean isAckHeader(ByteBuf byteBuf) {
+        int ackLabel = byteBuf.getInt(0);
+        return (ackLabel & (1 << AckLabelPosition.IS_PLAIN_BODY_ACK.value())) != 0;
+    }
+
     public static int getSequenceNumberFromLabel(int label) {
         return label & ByteUtil.getMask(AckLabelPosition.SEQUENCE_NUMBER.value());
     }

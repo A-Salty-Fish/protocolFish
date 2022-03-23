@@ -1,6 +1,8 @@
 package handler.header.handler;
 
 import handler.RequestHandler;
+import handler.header.AckHeader;
+import handler.header.PlainBodyHeader;
 import handler.header.ShakeHandHeader;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
@@ -27,8 +29,12 @@ public class PlainHeaderHandler implements HeaderHandler {
         if (ShakeHandHeader.isShakeHandHeader(byteBuffer)) {
             handler(ctx, packet);
             return new ShakeHandHeaderHandler(isClient);
-        } else {
+        } else if (PlainBodyHeader.isPlainBodyHeader(byteBuffer)) {
             return new PlainBodyHeaderHandler();
+        } else if (AckHeader.isAckHeader(byteBuffer)) {
+            return new AckHeaderHandler();
+        } else {
+            return new ExceptionHeaderHandler("header not support");
         }
     }
 

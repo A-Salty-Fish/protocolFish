@@ -207,7 +207,7 @@ public class CodecUtil {
         return classToIdentity.get(clazz);
     }
 
-    public Class<?> getClassByIdentity(int identity) {
+    public static Class<?> getClassByIdentity(int identity) {
         return identityToClass.get(identity);
     }
 
