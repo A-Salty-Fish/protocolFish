@@ -58,7 +58,7 @@ public class TestUdpClient {
 
     public static void sendPlainBody() throws InterruptedException {
         channel.writeAndFlush(new DatagramPacket(
-                PlainBodyHeader.getPlainBodyHeader(channel),
+                PlainBodyHeader.getEmptyPlainBodyHeader(channel),
                 new InetSocketAddress(serverHostName, serverPort))).sync();
     }
 
