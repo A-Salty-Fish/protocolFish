@@ -57,5 +57,12 @@ public class IotSimpleEntity {
         return iotSimpleEntity;
     }
 
+    public static IotSimpleEntity randomIotSimpleEntity(double maxDouble) {
+        Random random = new Random();
+        IotSimpleEntity iotSimpleEntity = IotSimpleEntity.randomIotSimpleEntity();
+        iotSimpleEntity.doubleValue1 = random.nextDouble() * maxDouble;
+        iotSimpleEntity.doubleValue2 = random.nextDouble() * maxDouble;
+        return iotSimpleEntity;
+    }
 
 }

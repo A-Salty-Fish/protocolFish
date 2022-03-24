@@ -531,4 +531,19 @@ public class CodeCTest {
         System.out.println(ProtobufCountUtil.countBytes(iotSimpleEntity));
         System.out.println(new Gson().toJson(codecUtil.decode2(bytes, IotSimpleEntity.class)));
     }
+
+    @Test
+    public void testCodec2WithDoubleCompression() throws Exception {
+        CodecUtil.registerClass(IotSimpleEntity.class);
+        IotSimpleEntity iotSimpleEntity = IotSimpleEntity.randomIotSimpleEntity(255.0);
+        System.out.println(new Gson().toJson(iotSimpleEntity));
+        ProtocolConfig protocolConfig = ProtocolConfig.defaultConfig();
+        protocolConfig.setEnableDoubleCompression(true);
+        protocolConfig.setDoubleCompressionAccuracy(2);
+        CodecUtil codecUtil = new CodecUtil(protocolConfig);
+        byte[] bytes = codecUtil.encode2(iotSimpleEntity);
+        System.out.println(bytes.length);
+        System.out.println(ProtobufCountUtil.countBytes(iotSimpleEntity));
+        System.out.println(new Gson().toJson(codecUtil.decode2(bytes, IotSimpleEntity.class)));
+    }
 }

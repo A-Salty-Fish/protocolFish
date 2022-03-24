@@ -865,6 +865,9 @@ public class CodecUtil {
             return decodeLong(bytes);
         } else if (clazz == double.class || clazz == Double.class) {
             long l = decodeLong(bytes);
+            if (protocolConfig.getEnableDoubleCompression()) {
+                return deCompressDoubleFromLong(l);
+            }
             return Double.longBitsToDouble(l);
         } else {
             throw new Exception("type not support");
