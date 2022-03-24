@@ -6,7 +6,9 @@ import lombok.extern.slf4j.Slf4j;
 import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
 import java.time.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static util.CodecUtil.FieldType.*;
@@ -708,7 +710,7 @@ public class CodecUtil {
         return ((double) value) / power;
     }
 
-    public Byte[] encode2(Object obj) throws Exception {
+    public byte[] encode2(Object obj) throws Exception {
         List<Field> constantLengthFields = constantLengthFieldMap.get(obj.getClass());
         List<Field> variableLengthFields = variableLengthFieldMap.get(obj.getClass());
         List<Byte> bytes = new ArrayList<>(constantLengthFields.size() * 4 + variableLengthFields.size() * 128);
@@ -730,7 +732,11 @@ public class CodecUtil {
                 }
             }
         }
-        return bytes.toArray(new Byte[0]);
+        byte[] bytesArray = new byte[bytes.size()];
+        for (int i = 0; i < bytes.size(); i++) {
+            bytesArray[i] = bytes.get(i);
+        }
+        return bytesArray;
     }
 
     public Byte[] encode2(Object obj, Field field) throws Exception {
@@ -741,7 +747,12 @@ public class CodecUtil {
         } else if (fieldType.equals(long.class) || fieldType.equals(Long.class)) {
             return encodeLong(field.getLong(obj));
         } else if (fieldType.equals(double.class) || fieldType.equals(Double.class)) {
-            long value = Double.doubleToLongBits(field.getDouble(obj));
+            double doubleValue = field.getDouble(obj);
+            if (protocolConfig.getEnableDoubleCompression()) {
+                long value = compressDoubleToLong(doubleValue);
+                return encodeLong(value);
+            }
+            long value = Double.doubleToLongBits(doubleValue);
             return encodeLong(value);
         } else if (fieldType.equals(String.class)) {
             byte[] stringBytes = field.get(obj).toString().getBytes(protocolConfig.getCharset());
@@ -775,16 +786,16 @@ public class CodecUtil {
         int pos = 0;
         n = getZigZag(n);
         if ((n & ~0x7F) != 0) {
-            buf[pos++] = (byte)((n | 0x80) & 0xFF);
+            buf[pos++] = (byte) ((n | 0x80) & 0xFF);
             n >>>= 7;
             if (n > 0x7F) {
-                buf[pos++] = (byte)((n | 0x80) & 0xFF);
+                buf[pos++] = (byte) ((n | 0x80) & 0xFF);
                 n >>>= 7;
                 if (n > 0x7F) {
-                    buf[pos++] = (byte)((n | 0x80) & 0xFF);
+                    buf[pos++] = (byte) ((n | 0x80) & 0xFF);
                     n >>>= 7;
                     if (n > 0x7F) {
-                        buf[pos++] = (byte)((n | 0x80) & 0xFF);
+                        buf[pos++] = (byte) ((n | 0x80) & 0xFF);
                         n >>>= 7;
                     }
                 }
@@ -799,23 +810,11 @@ public class CodecUtil {
         Byte[] buf = new Byte[10];
         int pos = 0;
         n = getZigZag(n);
-        if ((n & ~0x7F) != 0) {
-            buf[pos++] = (byte)((n | 0x80) & 0xFF);
+        while ((n & (~0x7f)) != 0) {
+            buf[pos++] = (byte) ((n | 0x80) & 0xFF);
             n >>>= 7;
-            if (n > 0x7F) {
-                buf[pos++] = (byte)((n | 0x80) & 0xFF);
-                n >>>= 7;
-                if (n > 0x7F) {
-                    buf[pos++] = (byte)((n | 0x80) & 0xFF);
-                    n >>>= 7;
-                    if (n > 0x7F) {
-                        buf[pos++] = (byte)((n | 0x80) & 0xFF);
-                        n >>>= 7;
-                    }
-                }
-            }
         }
-        buf[pos++] = (byte) n;
+        buf[pos] = (byte) n;
         return buf;
     }
 
@@ -851,7 +850,7 @@ public class CodecUtil {
         while ((bytes[offset] & (1 << 7)) != 0) {
             constantBytes.add(bytes[offset++]);
         }
-        constantBytes.add(bytes[offset++]);
+        constantBytes.add(bytes[offset]);
         byte[] result = new byte[constantBytes.size()];
         for (int i = 0; i < constantBytes.size(); i++) {
             result[i] = constantBytes.get(i);
@@ -872,22 +871,21 @@ public class CodecUtil {
         }
     }
 
-    public int decodeInt(byte[] buf) throws Exception {
+    public static int decodeInt(byte[] buf) throws Exception {
         int len = 1;
-        int pos = 0;
-        int b = buf[pos] & 0xff;
+        int b = buf[0] & 0xff;
         int n = b & 0x7f;
         if (b > 0x7f) {
-            b = buf[pos + len++] & 0xff;
+            b = buf[len++] & 0xff;
             n ^= (b & 0x7f) << 7;
             if (b > 0x7f) {
-                b = buf[pos + len++] & 0xff;
+                b = buf[len++] & 0xff;
                 n ^= (b & 0x7f) << 14;
                 if (b > 0x7f) {
-                    b = buf[pos + len++] & 0xff;
+                    b = buf[len++] & 0xff;
                     n ^= (b & 0x7f) << 21;
                     if (b > 0x7f) {
-                        b = buf[pos + len++] & 0xff;
+                        b = buf[len++] & 0xff;
                         n ^= (b & 0x7f) << 28;
                         if (b > 0x7f) {
                             throw new Exception("Invalid int encoding");
@@ -896,35 +894,17 @@ public class CodecUtil {
                 }
             }
         }
-        pos += len;
         return (n >>> 1) ^ -(n & 1); // back to two's-complement
     }
 
-    public long decodeLong(byte[] buf) throws Exception {
+    public static long decodeLong(byte[] buf) throws Exception {
         int len = 1;
-        int pos = 0;
-        long b = buf[pos] & 0xff;
+        long b = buf[0] & 0xff;
         long n = b & 0x7f;
-        if (b > 0x7f) {
-            b = buf[pos + len++] & 0xff;
-            n ^= (b & 0x7f) << 7;
-            if (b > 0x7f) {
-                b = buf[pos + len++] & 0xff;
-                n ^= (b & 0x7f) << 14;
-                if (b > 0x7f) {
-                    b = buf[pos + len++] & 0xff;
-                    n ^= (b & 0x7f) << 21;
-                    if (b > 0x7f) {
-                        b = buf[pos + len++] & 0xff;
-                        n ^= (b & 0x7f) << 28;
-                        if (b > 0x7f) {
-                            throw new Exception("Invalid long encoding");
-                        }
-                    }
-                }
-            }
+        while (b > 0x7f) {
+            b = buf[len++] & 0xff;
+            n ^= (b & 0x7f) << (7 * (len - 1));
         }
-        pos += len;
         return (n >>> 1) ^ -(n & 1); // back to two's-complement
     }
 }

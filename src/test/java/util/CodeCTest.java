@@ -474,9 +474,49 @@ public class CodeCTest {
     }
 
     @Test
-    public void testVarInt() {
-        System.out.println(ByteUtil.bytesToString(CodecUtil.encodeLong(129L)));
-        System.out.println(ByteUtil.bytesToString(CodecUtil.encodeInt(30)));
+    public void testVarInt() throws Exception {
+//        System.out.println(ByteUtil.bytesToString(CodecUtil.encodeLong(129L)));
+//        System.out.println(ByteUtil.bytesToString(CodecUtil.encodeInt(30)));
+        int x = Integer.MAX_VALUE;
+        Byte[] bytes = CodecUtil.encodeInt(x);
+        System.out.println(x);
+        int notNullSize = 0;
+        for (Byte b : bytes) {
+            if (b != null) {
+                notNullSize++;
+            }
+        }
+        byte[] bytes2 = new byte[notNullSize];
+        for (int i = 0; i < notNullSize; i++) {
+            bytes2[i] = bytes[i];
+        }
+        System.out.println(CodecUtil.decodeInt(bytes2));
+    }
+
+    @Test
+    public void testVarLong() throws Exception {
+        long x = (long) Long.MIN_VALUE;
+        System.out.println(x);
+        Byte[] bytes = CodecUtil.encodeLong(x);
+        for (Byte b : bytes) {
+            if (b != null) {
+                System.out.println(ByteUtil.byteToString(b));
+            } else {
+                System.out.println("null");
+            }
+        }
+        int notNullSize = 0;
+        for (Byte b : bytes) {
+            if (b != null) {
+                notNullSize++;
+            }
+        }
+        byte[] bytes2 = new byte[notNullSize];
+        for (int i = 0; i < notNullSize; i++) {
+            bytes2[i] = bytes[i];
+        }
+        System.out.println(ByteUtil.bytesToString(bytes2));
+        System.out.println(CodecUtil.decodeLong(bytes2));
     }
 
     @Test
@@ -484,10 +524,11 @@ public class CodeCTest {
         CodecUtil.registerClass(IotSimpleEntity.class);
         IotSimpleEntity iotSimpleEntity = IotSimpleEntity.randomIotSimpleEntity();
         System.out.println(new Gson().toJson(iotSimpleEntity));
-        CodecUtil codecUtil = new CodecUtil(ProtocolConfig.defaultConfig());
-        byte[] bytes = codecUtil.encode(iotSimpleEntity);
+        ProtocolConfig protocolConfig = ProtocolConfig.defaultConfig();
+        CodecUtil codecUtil = new CodecUtil(protocolConfig);
+        byte[] bytes = codecUtil.encode2(iotSimpleEntity);
         System.out.println(bytes.length);
         System.out.println(ProtobufCountUtil.countBytes(iotSimpleEntity));
-        System.out.println(new Gson().toJson(codecUtil.decode(bytes, IotSimpleEntity.class)));
+        System.out.println(new Gson().toJson(codecUtil.decode2(bytes, IotSimpleEntity.class)));
     }
 }
