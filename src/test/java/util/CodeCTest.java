@@ -1,6 +1,7 @@
 package util;
 
 import com.google.gson.Gson;
+import demo.IotSimpleEntity;
 import demo.TestEntity;
 import demo.TestXmlEntity;
 import org.junit.Assert;
@@ -470,5 +471,23 @@ public class CodeCTest {
 //            System.out.println(testEntityOuterClass.toByteArray().length + ":" +ProtobufUtil.countBytes(testEntity));
         }
         System.out.println( (double)exactLength / myLength);
+    }
+
+    @Test
+    public void testVarInt() {
+        System.out.println(ByteUtil.bytesToString(CodecUtil.encodeLong(129L)));
+        System.out.println(ByteUtil.bytesToString(CodecUtil.encodeInt(30)));
+    }
+
+    @Test
+    public void testCodec2() throws Exception {
+        CodecUtil.registerClass(IotSimpleEntity.class);
+        IotSimpleEntity iotSimpleEntity = IotSimpleEntity.randomIotSimpleEntity();
+        System.out.println(new Gson().toJson(iotSimpleEntity));
+        CodecUtil codecUtil = new CodecUtil(ProtocolConfig.defaultConfig());
+        byte[] bytes = codecUtil.encode(iotSimpleEntity);
+        System.out.println(bytes.length);
+        System.out.println(ProtobufCountUtil.countBytes(iotSimpleEntity));
+        System.out.println(new Gson().toJson(codecUtil.decode(bytes, IotSimpleEntity.class)));
     }
 }

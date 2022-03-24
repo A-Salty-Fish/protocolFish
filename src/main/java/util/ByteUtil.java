@@ -25,6 +25,18 @@ public class ByteUtil {
         return sb.toString();
     }
 
+    public static String bytesToString(Byte[] bytes) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < bytes.length; i++) {
+            if (bytes[i] == null) {
+                break;
+            }
+            sb.append(byteToString(bytes[i]));
+            sb.append(" ");
+        }
+        return sb.toString();
+    }
+
     public static byte[] convertIntegerToBytes(int value) {
         return new byte[]{(byte) (value >>> 24), (byte) (value >>> 16), (byte) (value >>> 8), (byte) value};
     }

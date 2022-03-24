@@ -6,10 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
 import java.time.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static util.CodecUtil.FieldType.*;
@@ -710,100 +707,224 @@ public class CodecUtil {
         int power = (int) Math.pow(10, accuracy);
         return ((double) value) / power;
     }
-//
-//    public Byte[] encode2(Object obj) throws Exception {
-//        List<Byte> bytes = new ArrayList<>(128);
-//        List<Field> constantLengthFields = constantLengthFieldMap.get(obj.getClass());
-//        List<Field> variableLengthFields = variableLengthFieldMap.get(obj.getClass());
-//        for (Field field : constantLengthFields) {
-//            field.setAccessible(true);
-//            Byte[] fieldBytes = encode2(obj, field);
-//            for (Byte b : fieldBytes) {
-//                if (b != 0) {
-//                    bytes.add(b);
-//                }
-//            }
-//        }
-//        for (Field field : variableLengthFields) {
-//            field.setAccessible(true);
-//        }
-//        return bytes.toArray(new Byte[0]);
-//    }
-//
-//    public Byte[] encode2(Object obj, Field field) throws Exception {
-//        Class<?> fieldType = field.getType();
-//        List<Byte> bytes;
-//        if (fieldType.equals(int.class) || fieldType.equals(Integer.class)) {
-//            Byte[] intBytes = encodeInt(field.getInt(obj));
-//        } else if (fieldType.equals(long.class) || fieldType.equals(Long.class)) {
-//            Byte[] longBytes = encodeLong(field.getLong(obj));
-//        } else if (fieldType.equals(double.class) || fieldType.equals(Double.class)) {
-//
-//        } else if (fieldType.equals(String.class)) {
-//
-//        } else {
-//            throw new Exception("type not support");
-//        }
-//        return null;
-//    }
-//
-//    public static long getZigZag(long num) {
-//        return ((num >> 63) ^ (num << 1));
-//    }
-//
-//    public static int getZigZag(int num) {
-//        return ((num >> 31) ^ (num << 1));
-//    }
-//
-//    public static Byte[] encodeInt(int n) {
-//// move sign to low-order bit, and flip others if negative
-//        Byte[] buf = new Byte[5];
-//        int pos = 0;
-//        n = (n << 1) ^ (n >> 31);
-//        int start = pos;
-//        if ((n & ~0x7F) != 0) {
-//            buf[pos++] = (byte)((n | 0x80) & 0xFF);
-//            n >>>= 7;
-//            if (n > 0x7F) {
-//                buf[pos++] = (byte)((n | 0x80) & 0xFF);
-//                n >>>= 7;
-//                if (n > 0x7F) {
-//                    buf[pos++] = (byte)((n | 0x80) & 0xFF);
-//                    n >>>= 7;
-//                    if (n > 0x7F) {
-//                        buf[pos++] = (byte)((n | 0x80) & 0xFF);
-//                        n >>>= 7;
-//                    }
-//                }
-//            }
-//        }
-//        buf[pos++] = (byte) n;
-//        return buf;
-//    }
-//
-//    public static Byte[] encodeLong(long n) {
-//// move sign to low-order bit, and flip others if negative
-//        Byte[] buf = new Byte[10];
-//        int pos = 0;
-//        n = (n << 1) ^ (n >> 63);
-//        int start = pos;
-//        if ((n & ~0x7F) != 0) {
-//            buf[pos++] = (byte)((n | 0x80) & 0xFF);
-//            n >>>= 7;
-//            if (n > 0x7F) {
-//                buf[pos++] = (byte)((n | 0x80) & 0xFF);
-//                n >>>= 7;
-//                if (n > 0x7F) {
-//                    buf[pos++] = (byte)((n | 0x80) & 0xFF);
-//                    n >>>= 7;
-//                    if (n > 0x7F) {
-//                        buf[pos++] = (byte)((n | 0x80) & 0xFF);
-//                        n >>>= 7;
-//                    }
-//                }
-//            }
-//        }
-//        buf[pos++] = (byte) n;
-//        return buf;
-//    }
+
+    public Byte[] encode2(Object obj) throws Exception {
+        List<Field> constantLengthFields = constantLengthFieldMap.get(obj.getClass());
+        List<Field> variableLengthFields = variableLengthFieldMap.get(obj.getClass());
+        List<Byte> bytes = new ArrayList<>(constantLengthFields.size() * 4 + variableLengthFields.size() * 128);
+        for (Field field : constantLengthFields) {
+            field.setAccessible(true);
+            Byte[] fieldBytes = encode2(obj, field);
+            for (Byte b : fieldBytes) {
+                if (b != null) {
+                    bytes.add(b);
+                }
+            }
+        }
+        for (Field field : variableLengthFields) {
+            field.setAccessible(true);
+            Byte[] fieldBytes = encode2(obj, field);
+            for (Byte b : fieldBytes) {
+                if (b != null) {
+                    bytes.add(b);
+                }
+            }
+        }
+        return bytes.toArray(new Byte[0]);
+    }
+
+    public Byte[] encode2(Object obj, Field field) throws Exception {
+        Class<?> fieldType = field.getType();
+        List<Byte> bytes;
+        if (fieldType.equals(int.class) || fieldType.equals(Integer.class)) {
+            return encodeInt(field.getInt(obj));
+        } else if (fieldType.equals(long.class) || fieldType.equals(Long.class)) {
+            return encodeLong(field.getLong(obj));
+        } else if (fieldType.equals(double.class) || fieldType.equals(Double.class)) {
+            long value = Double.doubleToLongBits(field.getDouble(obj));
+            return encodeLong(value);
+        } else if (fieldType.equals(String.class)) {
+            byte[] stringBytes = field.get(obj).toString().getBytes(protocolConfig.getCharset());
+            int length = stringBytes.length;
+            Byte[] lengthBytes = encodeInt(length);
+            bytes = new ArrayList<>(lengthBytes.length + length);
+            for (Byte b : lengthBytes) {
+                if (b != null) {
+                    bytes.add(b);
+                }
+            }
+            for (byte b : stringBytes) {
+                bytes.add(b);
+            }
+            return bytes.toArray(new Byte[0]);
+        } else {
+            throw new Exception("type not support");
+        }
+    }
+
+    public static long getZigZag(long num) {
+        return ((num >> 63) ^ (num << 1));
+    }
+
+    public static int getZigZag(int num) {
+        return ((num >> 31) ^ (num << 1));
+    }
+
+    public static Byte[] encodeInt(int n) {
+        Byte[] buf = new Byte[5];
+        int pos = 0;
+        n = getZigZag(n);
+        if ((n & ~0x7F) != 0) {
+            buf[pos++] = (byte)((n | 0x80) & 0xFF);
+            n >>>= 7;
+            if (n > 0x7F) {
+                buf[pos++] = (byte)((n | 0x80) & 0xFF);
+                n >>>= 7;
+                if (n > 0x7F) {
+                    buf[pos++] = (byte)((n | 0x80) & 0xFF);
+                    n >>>= 7;
+                    if (n > 0x7F) {
+                        buf[pos++] = (byte)((n | 0x80) & 0xFF);
+                        n >>>= 7;
+                    }
+                }
+            }
+        }
+        buf[pos++] = (byte) n;
+        return buf;
+    }
+
+    public static Byte[] encodeLong(long n) {
+// move sign to low-order bit, and flip others if negative
+        Byte[] buf = new Byte[10];
+        int pos = 0;
+        n = getZigZag(n);
+        if ((n & ~0x7F) != 0) {
+            buf[pos++] = (byte)((n | 0x80) & 0xFF);
+            n >>>= 7;
+            if (n > 0x7F) {
+                buf[pos++] = (byte)((n | 0x80) & 0xFF);
+                n >>>= 7;
+                if (n > 0x7F) {
+                    buf[pos++] = (byte)((n | 0x80) & 0xFF);
+                    n >>>= 7;
+                    if (n > 0x7F) {
+                        buf[pos++] = (byte)((n | 0x80) & 0xFF);
+                        n >>>= 7;
+                    }
+                }
+            }
+        }
+        buf[pos++] = (byte) n;
+        return buf;
+    }
+
+    public <T> T decode2(byte[] bytes, Class<T> clazz) throws Exception {
+        List<Field> constantLengthFields = constantLengthFieldMap.get(clazz);
+        List<Field> variableLengthFields = variableLengthFieldMap.get(clazz);
+        int offset = 0;
+        T result = clazz.newInstance();
+        for (Field field : constantLengthFields) {
+            offset += decodeConstantBytes2(bytes, offset, field, result);
+        }
+        for (Field field : variableLengthFields) {
+            byte[] lengthBytes = getConstantBytes2(bytes, offset);
+            offset += lengthBytes.length;
+            int length = decodeInt(lengthBytes);
+            byte[] valueBytes = new byte[length];
+            System.arraycopy(bytes, offset, valueBytes, 0, length);
+            offset += length;
+            field.set(result, new String(valueBytes, protocolConfig.getCharset()));
+        }
+        return result;
+    }
+
+    public int decodeConstantBytes2(byte[] bytes, int offset, Field field, Object obj) throws Exception {
+        Class<?> fieldType = field.getType();
+        byte[] fieldBytes = getConstantBytes2(bytes, offset);
+        field.set(obj, decodeConstantFieldBytes2(fieldBytes, fieldType));
+        return fieldBytes.length;
+    }
+
+    public byte[] getConstantBytes2(byte[] bytes, int offset) throws Exception {
+        List<Byte> constantBytes = new ArrayList<>(10);
+        while ((bytes[offset] & (1 << 7)) != 0) {
+            constantBytes.add(bytes[offset++]);
+        }
+        constantBytes.add(bytes[offset++]);
+        byte[] result = new byte[constantBytes.size()];
+        for (int i = 0; i < constantBytes.size(); i++) {
+            result[i] = constantBytes.get(i);
+        }
+        return result;
+    }
+
+    public Object decodeConstantFieldBytes2(byte[] bytes, Class<?> clazz) throws Exception {
+        if (clazz == int.class || clazz == Integer.class) {
+            return decodeInt(bytes);
+        } else if (clazz == long.class || clazz == Long.class) {
+            return decodeLong(bytes);
+        } else if (clazz == double.class || clazz == Double.class) {
+            long l = decodeLong(bytes);
+            return Double.longBitsToDouble(l);
+        } else {
+            throw new Exception("type not support");
+        }
+    }
+
+    public int decodeInt(byte[] buf) throws Exception {
+        int len = 1;
+        int pos = 0;
+        int b = buf[pos] & 0xff;
+        int n = b & 0x7f;
+        if (b > 0x7f) {
+            b = buf[pos + len++] & 0xff;
+            n ^= (b & 0x7f) << 7;
+            if (b > 0x7f) {
+                b = buf[pos + len++] & 0xff;
+                n ^= (b & 0x7f) << 14;
+                if (b > 0x7f) {
+                    b = buf[pos + len++] & 0xff;
+                    n ^= (b & 0x7f) << 21;
+                    if (b > 0x7f) {
+                        b = buf[pos + len++] & 0xff;
+                        n ^= (b & 0x7f) << 28;
+                        if (b > 0x7f) {
+                            throw new Exception("Invalid int encoding");
+                        }
+                    }
+                }
+            }
+        }
+        pos += len;
+        return (n >>> 1) ^ -(n & 1); // back to two's-complement
+    }
+
+    public long decodeLong(byte[] buf) throws Exception {
+        int len = 1;
+        int pos = 0;
+        long b = buf[pos] & 0xff;
+        long n = b & 0x7f;
+        if (b > 0x7f) {
+            b = buf[pos + len++] & 0xff;
+            n ^= (b & 0x7f) << 7;
+            if (b > 0x7f) {
+                b = buf[pos + len++] & 0xff;
+                n ^= (b & 0x7f) << 14;
+                if (b > 0x7f) {
+                    b = buf[pos + len++] & 0xff;
+                    n ^= (b & 0x7f) << 21;
+                    if (b > 0x7f) {
+                        b = buf[pos + len++] & 0xff;
+                        n ^= (b & 0x7f) << 28;
+                        if (b > 0x7f) {
+                            throw new Exception("Invalid long encoding");
+                        }
+                    }
+                }
+            }
+        }
+        pos += len;
+        return (n >>> 1) ^ -(n & 1); // back to two's-complement
+    }
 }
