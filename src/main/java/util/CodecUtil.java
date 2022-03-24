@@ -741,7 +741,7 @@ public class CodecUtil {
 
     public Byte[] encode2(Object obj, Field field) throws Exception {
         Class<?> fieldType = field.getType();
-        List<Byte> bytes;
+//        List<Byte> bytes;
         if (fieldType.equals(int.class) || fieldType.equals(Integer.class)) {
             return encodeInt((Integer) field.get(obj));
         } else if (fieldType.equals(long.class) || fieldType.equals(Long.class)) {
@@ -759,16 +759,12 @@ public class CodecUtil {
             byte[] stringBytes = str.getBytes(protocolConfig.getCharset());
             int length = stringBytes.length;
             Byte[] lengthBytes = encodeInt(length);
-            bytes = new ArrayList<>(lengthBytes.length + length);
-            for (Byte b : lengthBytes) {
-                if (b != null) {
-                    bytes.add(b);
-                }
+            Byte[] bytes = new Byte[lengthBytes.length + stringBytes.length];
+            System.arraycopy(lengthBytes, 0, bytes, 0, lengthBytes.length);
+            for (int i = 0; i < stringBytes.length; i++) {
+                bytes[i + lengthBytes.length] = stringBytes[i];
             }
-            for (byte b : stringBytes) {
-                bytes.add(b);
-            }
-            return bytes.toArray(new Byte[0]);
+            return bytes;
         } else {
             throw new Exception("type not support");
         }
