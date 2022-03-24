@@ -7,6 +7,7 @@ import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
 import java.time.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -709,4 +710,100 @@ public class CodecUtil {
         int power = (int) Math.pow(10, accuracy);
         return ((double) value) / power;
     }
+//
+//    public Byte[] encode2(Object obj) throws Exception {
+//        List<Byte> bytes = new ArrayList<>(128);
+//        List<Field> constantLengthFields = constantLengthFieldMap.get(obj.getClass());
+//        List<Field> variableLengthFields = variableLengthFieldMap.get(obj.getClass());
+//        for (Field field : constantLengthFields) {
+//            field.setAccessible(true);
+//            Byte[] fieldBytes = encode2(obj, field);
+//            for (Byte b : fieldBytes) {
+//                if (b != 0) {
+//                    bytes.add(b);
+//                }
+//            }
+//        }
+//        for (Field field : variableLengthFields) {
+//            field.setAccessible(true);
+//        }
+//        return bytes.toArray(new Byte[0]);
+//    }
+//
+//    public Byte[] encode2(Object obj, Field field) throws Exception {
+//        Class<?> fieldType = field.getType();
+//        List<Byte> bytes;
+//        if (fieldType.equals(int.class) || fieldType.equals(Integer.class)) {
+//            Byte[] intBytes = encodeInt(field.getInt(obj));
+//        } else if (fieldType.equals(long.class) || fieldType.equals(Long.class)) {
+//            Byte[] longBytes = encodeLong(field.getLong(obj));
+//        } else if (fieldType.equals(double.class) || fieldType.equals(Double.class)) {
+//
+//        } else if (fieldType.equals(String.class)) {
+//
+//        } else {
+//            throw new Exception("type not support");
+//        }
+//        return null;
+//    }
+//
+//    public static long getZigZag(long num) {
+//        return ((num >> 63) ^ (num << 1));
+//    }
+//
+//    public static int getZigZag(int num) {
+//        return ((num >> 31) ^ (num << 1));
+//    }
+//
+//    public static Byte[] encodeInt(int n) {
+//// move sign to low-order bit, and flip others if negative
+//        Byte[] buf = new Byte[5];
+//        int pos = 0;
+//        n = (n << 1) ^ (n >> 31);
+//        int start = pos;
+//        if ((n & ~0x7F) != 0) {
+//            buf[pos++] = (byte)((n | 0x80) & 0xFF);
+//            n >>>= 7;
+//            if (n > 0x7F) {
+//                buf[pos++] = (byte)((n | 0x80) & 0xFF);
+//                n >>>= 7;
+//                if (n > 0x7F) {
+//                    buf[pos++] = (byte)((n | 0x80) & 0xFF);
+//                    n >>>= 7;
+//                    if (n > 0x7F) {
+//                        buf[pos++] = (byte)((n | 0x80) & 0xFF);
+//                        n >>>= 7;
+//                    }
+//                }
+//            }
+//        }
+//        buf[pos++] = (byte) n;
+//        return buf;
+//    }
+//
+//    public static Byte[] encodeLong(long n) {
+//// move sign to low-order bit, and flip others if negative
+//        Byte[] buf = new Byte[10];
+//        int pos = 0;
+//        n = (n << 1) ^ (n >> 63);
+//        int start = pos;
+//        if ((n & ~0x7F) != 0) {
+//            buf[pos++] = (byte)((n | 0x80) & 0xFF);
+//            n >>>= 7;
+//            if (n > 0x7F) {
+//                buf[pos++] = (byte)((n | 0x80) & 0xFF);
+//                n >>>= 7;
+//                if (n > 0x7F) {
+//                    buf[pos++] = (byte)((n | 0x80) & 0xFF);
+//                    n >>>= 7;
+//                    if (n > 0x7F) {
+//                        buf[pos++] = (byte)((n | 0x80) & 0xFF);
+//                        n >>>= 7;
+//                    }
+//                }
+//            }
+//        }
+//        buf[pos++] = (byte) n;
+//        return buf;
+//    }
 }
