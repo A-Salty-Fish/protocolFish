@@ -7,6 +7,7 @@ import org.junit.Test;
 import util.CodecUtil;
 import util.ProtobufCountUtil;
 import util.ProtocolConfig;
+import util.XmlUtil;
 
 /**
  * @author 13090
@@ -31,23 +32,55 @@ public class TestCompressionRate {
      * test default compression rate
      */
     @Test
-    public void testDefaultConfig() throws IllegalAccessException {
+    public void testDefaultConfig() throws Exception {
         protocolConfig.setEnableDoubleCompression(false);
         protocolConfig.setEnableBaseLineCompression(false);
         protocolConfig.setVariableHeadByteLength(4);
         CodecUtil codecUtil = new CodecUtil(protocolConfig);
-        long myLength = 0;
+        long myLength1 = 0;
+        long myLength2 = 0;
         long protobufLength = 0;
         long jsonLength = 0;
-        for (int i = 0; i < 100000; i++) {
+        long xmlLength = 0;
+        for (int i = 0; i < 1000; i++) {
             IotSimpleEntity iotSimpleEntity = IotSimpleEntity.randomIotSimpleEntity();
-            myLength += codecUtil.encode(iotSimpleEntity).length;
+            myLength1 += codecUtil.encode(iotSimpleEntity).length;
+            myLength2 += codecUtil.encode2(iotSimpleEntity).length;
             protobufLength += ProtobufCountUtil.countBytes(iotSimpleEntity);
             jsonLength += gson.toJson(iotSimpleEntity).getBytes().length;
+            xmlLength += XmlUtil.convertToXml(iotSimpleEntity).getBytes().length;
         }
-        System.out.println("myLength: " + myLength);
-        System.out.println("protobufLength: " + protobufLength);
-        System.out.println("jsonLength: " + jsonLength);
+        System.out.println("|myLength1\t|" + myLength1 + "|\t");
+        System.out.println("|myLength2\t|" + myLength2 + "|\t");
+        System.out.println("|protobufLength\t| " + protobufLength + "|\t");
+        System.out.println("|jsonLength:\t|" + jsonLength + "|\t");
+        System.out.println("|xmlLength:\t|" + xmlLength + "|\t");
+    }
+
+    @Test
+    public void testCodecWithDoubleCompression() throws Exception {
+        protocolConfig.setEnableDoubleCompression(true);
+        protocolConfig.setDoubleCompressionAccuracy(2);
+        protocolConfig.setEnableBaseLineCompression(false);
+        CodecUtil codecUtil = new CodecUtil(protocolConfig);
+        long myLength1 = 0;
+        long myLength2 = 0;
+        long protobufLength = 0;
+        long jsonLength = 0;
+        long xmlLength = 0;
+        for (int i = 0; i < 1000; i++) {
+            IotSimpleEntity iotSimpleEntity = IotSimpleEntity.randomIotSimpleEntity();
+            myLength1 += codecUtil.encode(iotSimpleEntity).length;
+            myLength2 += codecUtil.encode2(iotSimpleEntity).length;
+            protobufLength += ProtobufCountUtil.countBytes(iotSimpleEntity);
+            jsonLength += gson.toJson(iotSimpleEntity).getBytes().length;
+            xmlLength += XmlUtil.convertToXml(iotSimpleEntity).getBytes().length;
+        }
+        System.out.println("|myLength1\t|" + myLength1 + "|\t");
+        System.out.println("|myLength2\t|" + myLength2 + "|\t");
+        System.out.println("|protobufLength\t| " + protobufLength + "|\t");
+        System.out.println("|jsonLength:\t|" + jsonLength + "|\t");
+        System.out.println("|xmlLength:\t|" + xmlLength + "|\t");
     }
 
     @Test
@@ -62,21 +95,19 @@ public class TestCompressionRate {
         long myLength1 = 0;
         long protobufLength = 0;
         long jsonLength = 0;
-        for (int i = 0; i < 100000; i++) {
+        long xmlLength = 0;
+        for (int i = 0; i < 2000; i++) {
             iotSimpleEntity = IotSimpleEntity.randomNearIotSimpleEntity(iotSimpleEntity, 10.0, 4, 1000, 20);
             myLength1 += codecUtil.encode(iotSimpleEntity).length;
             myLength2 += codecUtil.encode2(iotSimpleEntity).length;
             protobufLength += ProtobufCountUtil.countBytes(iotSimpleEntity);
             jsonLength += gson.toJson(iotSimpleEntity).getBytes().length;
+            xmlLength += XmlUtil.convertToXml(iotSimpleEntity).getBytes().length;
         }
-        System.out.println("myLength1: " + myLength1);
-        System.out.println("myLength2: " + myLength2);
-        System.out.println("protobufLength: " + protobufLength);
-        System.out.println("jsonLength: " + jsonLength);
-        System.out.println();
-        System.out.println("myLength1/protobufLength: " + (double) myLength1 / protobufLength);
-        System.out.println("myLength2/protobufLength: " + (double) myLength2 / protobufLength);
-        System.out.println("myLength1/jsonLength: " + (double) myLength1 / jsonLength);
-        System.out.println("myLength2/jsonLength: " + (double) myLength2 / jsonLength);
+        System.out.println("|myLength1\t|" + myLength1 + "|\t");
+        System.out.println("|myLength2\t|" + myLength2 + "|\t");
+        System.out.println("|protobufLength\t| " + protobufLength + "|\t");
+        System.out.println("|jsonLength:\t|" + jsonLength + "|\t");
+        System.out.println("|xmlLength:\t|" + xmlLength + "|\t");
     }
 }

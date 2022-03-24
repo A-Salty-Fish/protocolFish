@@ -2,6 +2,7 @@ package demo;
 
 import com.google.gson.Gson;
 
+import javax.xml.bind.annotation.XmlRootElement;
 import java.util.Random;
 
 /**
@@ -10,7 +11,7 @@ import java.util.Random;
  * @description: TODO
  * @date 2022/3/23 20:21
  */
-
+@XmlRootElement
 public class IotSimpleEntity {
 
     public long deviceId;

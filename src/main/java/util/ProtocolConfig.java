@@ -98,7 +98,7 @@ public class ProtocolConfig {
         config.setDoubleCompressionAccuracy((label >> PlainHeader.LabelPosition.DOUBLE_COMPRESSION_ACCURACY.value()) & 0x0f);
         config.setVariableHeadByteLength(((label >> PlainHeader.LabelPosition.VARIABLE_BYTE_LENGTH.value()) & 0x03) + 1);
         config.setCharset(convertByteToCharset((byte) ((label >> PlainHeader.LabelPosition.CHARSET.value()) & 0x07)));
-        config.setEnableBaseLineCompression(((label >> PlainHeader.LabelPosition.ENABLE_TIME_COMPRESSION.value()) & 1) != 0);
+        config.setEnableBaseLineCompression(((label >> PlainHeader.LabelPosition.ENABLE_BASELINE_COMPRESSION.value()) & 1) != 0);
         return config;
     }
 }

@@ -46,7 +46,7 @@ public class ShakeHandHeader extends PlainHeader {
         label |= ((protocolConfig.getDoubleCompressionAccuracy() & 0x0f) << LabelPosition.DOUBLE_COMPRESSION_ACCURACY.value());
         label |= ((protocolConfig.getVariableHeadByteLength() - 1) & 0x03) << LabelPosition.VARIABLE_BYTE_LENGTH.value();
         label |= (ProtocolConfig.convertCharSetToByte(protocolConfig.getCharset()) & 0x07) << LabelPosition.CHARSET.value();
-        label |= (protocolConfig.getEnableBaseLineCompression() ? 1 : 0) << LabelPosition.ENABLE_TIME_COMPRESSION.value();
+        label |= (protocolConfig.getEnableBaseLineCompression() ? 1 : 0) << LabelPosition.ENABLE_BASELINE_COMPRESSION.value();
         byteBuf.writeInt(label);
         return byteBuf;
     }

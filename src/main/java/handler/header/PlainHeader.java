@@ -59,7 +59,7 @@ public class PlainHeader {
         /**
          * 1 bit : time compressed enable
          */
-        ENABLE_TIME_COMPRESSION(18),
+        ENABLE_BASELINE_COMPRESSION(18),
 
         /**
          * 17 bit : magic number for handshake 11011111101010010
