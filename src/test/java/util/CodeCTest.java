@@ -534,16 +534,26 @@ public class CodeCTest {
     }
 
     @Test
-    public void testFunctionMetrics() throws Exception {
+    public void testEncode2() throws Exception {
 //         codecUtil = new CodecUtil(ProtocolConfig.defaultConfig());
         CodecUtil codecUtil = FunctionMetricProxy.getProxy(CodecUtil.class);
         codecUtil.registerClass(IotSimpleEntity.class);
-        for (int i=0;i < 10000;i++) {
+        for (int i=0;i < 100000;i++) {
             IotSimpleEntity iotSimpleEntity = IotSimpleEntity.randomIotSimpleEntity();
-            System.out.println(new Gson().toJson(iotSimpleEntity));
             byte[] bytes = codecUtil.encode2(iotSimpleEntity);
-            //        System.out.println(bytes.length);
-            FunctionMetricProxy.logDurations();
         }
+        FunctionMetricProxy.logDurations();
+    }
+
+    @Test
+    public void testDecode2() throws Exception {
+        CodecUtil codecUtil = FunctionMetricProxy.getProxy(CodecUtil.class);
+        codecUtil.registerClass(IotSimpleEntity.class);
+        IotSimpleEntity iotSimpleEntity = IotSimpleEntity.randomIotSimpleEntity();
+        byte[] bytes = new CodecUtil().encode2(iotSimpleEntity);
+        for (int i=0;i < 100000;i++) {
+            codecUtil.decode2(bytes, IotSimpleEntity.class);
+        }
+        FunctionMetricProxy.logDurations();
     }
 }

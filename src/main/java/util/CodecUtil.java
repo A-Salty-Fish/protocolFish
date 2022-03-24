@@ -791,19 +791,22 @@ public class CodecUtil {
             long value = Double.doubleToLongBits(doubleValue);
             return encodeLong(value);
         } else if (fieldType.equals(String.class)) {
-            String str = (String) field.get(obj);
-            byte[] stringBytes = str.getBytes(protocolConfig.getCharset());
-            int length = stringBytes.length;
-            Byte[] lengthBytes = encodeInt(length);
-            Byte[] bytes = new Byte[lengthBytes.length + stringBytes.length];
-            System.arraycopy(lengthBytes, 0, bytes, 0, lengthBytes.length);
-            for (int i = 0; i < stringBytes.length; i++) {
-                bytes[i + lengthBytes.length] = stringBytes[i];
-            }
-            return bytes;
+            return encodeString((String) field.get(obj));
         } else {
             throw new Exception("type not support");
         }
+    }
+
+    public Byte[] encodeString(String str) throws Exception {
+        byte[] stringBytes = str.getBytes(protocolConfig.getCharset());
+        int length = stringBytes.length;
+        Byte[] lengthBytes = encodeInt(length);
+        Byte[] bytes = new Byte[lengthBytes.length + stringBytes.length];
+        System.arraycopy(lengthBytes, 0, bytes, 0, lengthBytes.length);
+        for (int i = 0; i < stringBytes.length; i++) {
+            bytes[i + lengthBytes.length] = stringBytes[i];
+        }
+        return bytes;
     }
 
     public long getZigZag(long num) {
@@ -818,23 +821,11 @@ public class CodecUtil {
         Byte[] buf = new Byte[5];
         int pos = 0;
         n = getZigZag(n);
-        if ((n & ~0x7F) != 0) {
-            buf[pos++] = (byte) ((n | 0x80) & 0xFF);
+        while((n & ~0x7F) != 0) {
+            buf[pos++] = (byte)((n & 0x7F) | 0x80);
             n >>>= 7;
-            if (n > 0x7F) {
-                buf[pos++] = (byte) ((n | 0x80) & 0xFF);
-                n >>>= 7;
-                if (n > 0x7F) {
-                    buf[pos++] = (byte) ((n | 0x80) & 0xFF);
-                    n >>>= 7;
-                    if (n > 0x7F) {
-                        buf[pos++] = (byte) ((n | 0x80) & 0xFF);
-                        n >>>= 7;
-                    }
-                }
-            }
         }
-        buf[pos++] = (byte) n;
+        buf[pos] = (byte) n;
         return buf;
     }
 
