@@ -39,6 +39,8 @@ public class EncodeBenchmark {
 
     byte[] bytes;
 
+    byte[] bytes2;
+
     byte[] protoBytes;
 
     CodecUtil codecUtil;
@@ -61,11 +63,11 @@ public class EncodeBenchmark {
         protocolConfig.setVariableHeadByteLength(1);
         protocolConfig.setEnableBaseLineCompression(true);
         protocolConfig.setBaseLine(entity);
-//        protocolConfig.setEnableDoubleCompression(true);
-//        protocolConfig.setDoubleCompressionAccuracy(2);
-        bytes = new CodecUtil("").encode(entity);
+        codecUtil = new CodecUtil(protocolConfig);
+        bytes = codecUtil.encode(entity);
+        bytes2 = codecUtil.encode2(entity);
         protoBytes = protoEntity.toByteArray();
-        codecUtil = new CodecUtil(" ");
+
         json = gson.get().toJson(entity);
         xml = XmlUtil.convertToXml(xmlEntity);
     }
@@ -81,13 +83,23 @@ public class EncodeBenchmark {
     }
 
     @Benchmark
-    public void myEncode(Blackhole bh) throws IllegalAccessException {
+    public void myEncode1(Blackhole bh) throws IllegalAccessException {
         bh.consume(codecUtil.encode(entity));
     }
 
     @Benchmark
-    public void myDecode(Blackhole bh) throws Exception {
+    public void myDecode1(Blackhole bh) throws Exception {
         bh.consume(codecUtil.decode(bytes, TestEntity.class));
+    }
+
+    @Benchmark
+    public void myEncode2(Blackhole bh) throws Exception {
+        bh.consume(codecUtil.encode2(entity));
+    }
+
+    @Benchmark
+    public void myDecode2(Blackhole bh) throws Exception {
+        bh.consume(codecUtil.decode2(bytes2, TestEntity.class));
     }
 
     @Benchmark
@@ -126,12 +138,6 @@ public class EncodeBenchmark {
     }
 
     public static void main(String[] args) throws Exception {
-//        TestXmlEntity xmlEntity1 = TestXmlEntity.TestXmlEntityFromTestEntity(TestEntity.getRandomTestEntity());
-//        System.out.println(new Gson().toJson(xmlEntity1));
-//        String xml = XmlUtil.convertToXml(xmlEntity1);
-//        System.out.println(xml);
-//        TestXmlEntity xmlEntity2 = XmlUtil.convertToJava(xml, TestXmlEntity.class);
-//        System.out.println(new Gson().toJson(xmlEntity2));
         Options options = new OptionsBuilder()
                 .include(EncodeBenchmark.class.getSimpleName())
                 .resultFormat(ResultFormatType.JSON)
