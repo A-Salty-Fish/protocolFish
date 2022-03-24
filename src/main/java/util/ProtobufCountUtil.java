@@ -9,7 +9,7 @@ import java.lang.reflect.Field;
  * @date 2022/3/23 19:40
  */
 
-public class ProtobufUtil {
+public class ProtobufCountUtil {
     public static int countBytes(Object obj) throws IllegalAccessException {
         int bytes = 0;
         for (Field field : obj.getClass().getDeclaredFields()) {

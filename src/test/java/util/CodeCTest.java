@@ -466,7 +466,7 @@ public class CodeCTest {
             TestEntity testEntity = TestEntity.getRandomTestEntity();
             TestEntityOuterClass.TestEntity testEntityOuterClass = TestEntity.getProtocolEntityFromTestEntity(testEntity);
             exactLength += testEntityOuterClass.toByteArray().length;
-            myLength += ProtobufUtil.countBytes(testEntity);
+            myLength += ProtobufCountUtil.countBytes(testEntity);
 //            System.out.println(testEntityOuterClass.toByteArray().length + ":" +ProtobufUtil.countBytes(testEntity));
         }
         System.out.println( (double)exactLength / myLength);
