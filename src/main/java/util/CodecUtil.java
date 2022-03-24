@@ -743,11 +743,11 @@ public class CodecUtil {
         Class<?> fieldType = field.getType();
         List<Byte> bytes;
         if (fieldType.equals(int.class) || fieldType.equals(Integer.class)) {
-            return encodeInt(field.getInt(obj));
+            return encodeInt((Integer) field.get(obj));
         } else if (fieldType.equals(long.class) || fieldType.equals(Long.class)) {
-            return encodeLong(field.getLong(obj));
+            return encodeLong((Long) field.get(obj));
         } else if (fieldType.equals(double.class) || fieldType.equals(Double.class)) {
-            double doubleValue = field.getDouble(obj);
+            Double doubleValue = (Double) field.get(obj);
             if (protocolConfig.getEnableDoubleCompression()) {
                 long value = compressDoubleToLong(doubleValue);
                 return encodeLong(value);
@@ -755,7 +755,8 @@ public class CodecUtil {
             long value = Double.doubleToLongBits(doubleValue);
             return encodeLong(value);
         } else if (fieldType.equals(String.class)) {
-            byte[] stringBytes = field.get(obj).toString().getBytes(protocolConfig.getCharset());
+            String str = (String) field.get(obj);
+            byte[] stringBytes = str.getBytes(protocolConfig.getCharset());
             int length = stringBytes.length;
             Byte[] lengthBytes = encodeInt(length);
             bytes = new ArrayList<>(lengthBytes.length + length);

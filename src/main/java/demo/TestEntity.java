@@ -61,7 +61,7 @@ public class TestEntity {
         Random random = new Random();
         TestEntity testEntity = getRandomTestEntity();
         testEntity.setDoubleNum(maxDouble * random.nextDouble());
-        testEntity.setDoubleNum(maxDouble * random.nextDouble());
+        testEntity.setDoubleNum2(maxDouble * random.nextDouble());
         return testEntity;
     }
 
