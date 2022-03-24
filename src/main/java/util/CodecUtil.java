@@ -26,6 +26,11 @@ public class CodecUtil {
 
     ProtocolConfig protocolConfig;
 
+    public CodecUtil() {
+        this.clientKey = null;
+        this.protocolConfig = ProtocolConfig.defaultConfig();
+    }
+
     /**
      * for server pipeline
      *
@@ -718,9 +723,9 @@ public class CodecUtil {
             field.setAccessible(true);
             Byte[] fieldBytes;
             if (protocolConfig.getEnableBaseLineCompression()) {
-                fieldBytes = encode2(obj, field, protocolConfig.getBaseLine());
+                fieldBytes = encode2WithBaseLine(obj, field, protocolConfig.getBaseLine());
             } else {
-                fieldBytes = encode2(obj, field);
+                fieldBytes = encode2WithoutBaseLine(obj, field);
             }
             for (Byte b : fieldBytes) {
                 if (b != null) {
@@ -730,7 +735,7 @@ public class CodecUtil {
         }
         for (Field field : variableLengthFields) {
             field.setAccessible(true);
-            Byte[] fieldBytes = encode2(obj, field);
+            Byte[] fieldBytes = encode2WithoutBaseLine(obj, field);
             for (Byte b : fieldBytes) {
                 if (b != null) {
                     bytes.add(b);
@@ -744,7 +749,7 @@ public class CodecUtil {
         return bytesArray;
     }
 
-    public Byte[] encode2(Object obj, Field field, Object baseLineObj) throws Exception {
+    public Byte[] encode2WithBaseLine(Object obj, Field field, Object baseLineObj) throws Exception {
         Class<?> fieldType = field.getType();
         if (fieldType.equals(int.class) || fieldType.equals(Integer.class)) {
             int value = (Integer) field.get(obj);
@@ -770,7 +775,7 @@ public class CodecUtil {
         }
     }
 
-    public Byte[] encode2(Object obj, Field field) throws Exception {
+    public Byte[] encode2WithoutBaseLine(Object obj, Field field) throws Exception {
         Class<?> fieldType = field.getType();
 //        List<Byte> bytes;
         if (fieldType.equals(int.class) || fieldType.equals(Integer.class)) {
@@ -801,15 +806,15 @@ public class CodecUtil {
         }
     }
 
-    public static long getZigZag(long num) {
+    public long getZigZag(long num) {
         return ((num >> 63) ^ (num << 1));
     }
 
-    public static int getZigZag(int num) {
+    public int getZigZag(int num) {
         return ((num >> 31) ^ (num << 1));
     }
 
-    public static Byte[] encodeInt(int n) {
+    public Byte[] encodeInt(int n) {
         Byte[] buf = new Byte[5];
         int pos = 0;
         n = getZigZag(n);
@@ -833,7 +838,7 @@ public class CodecUtil {
         return buf;
     }
 
-    public static Byte[] encodeLong(long n) {
+    public Byte[] encodeLong(long n) {
 // move sign to low-order bit, and flip others if negative
         Byte[] buf = new Byte[10];
         int pos = 0;
