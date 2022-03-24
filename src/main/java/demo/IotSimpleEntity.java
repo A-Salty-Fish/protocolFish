@@ -65,4 +65,32 @@ public class IotSimpleEntity {
         return iotSimpleEntity;
     }
 
+    public static IotSimpleEntity randomNearIotSimpleEntity(IotSimpleEntity iotSimpleEntity, double dStep, int iStep, long lStep, int StrMaxLen) {
+        Random random = new Random();
+        iotSimpleEntity.stringValue1 = new Gson().toJson(iotSimpleEntity).substring(0, random.nextInt(StrMaxLen));
+        iotSimpleEntity.intValue1 += random.nextInt(iStep) - iStep / 2;
+        iotSimpleEntity.intValue2 += random.nextInt(iStep) - iStep / 2;
+        iotSimpleEntity.longValue1 += random.nextInt((int) lStep) - lStep / 2;
+        iotSimpleEntity.longValue2 += random.nextInt((int) lStep) - lStep / 2;
+        iotSimpleEntity.doubleValue1 += random.nextDouble() * dStep - dStep / 2;
+        iotSimpleEntity.doubleValue2 += random.nextDouble() * dStep - dStep / 2;
+        iotSimpleEntity.geoHash ^= (1 << random.nextInt(4));
+        iotSimpleEntity.timestamp += random.nextInt(50000);
+        return iotSimpleEntity;
+    }
+
+    public static IotSimpleEntity clone(IotSimpleEntity iotSimpleEntity) {
+        IotSimpleEntity clone = new IotSimpleEntity();
+        clone.deviceId = iotSimpleEntity.deviceId;
+        clone.geoHash = iotSimpleEntity.geoHash;
+        clone.timestamp = iotSimpleEntity.timestamp;
+        clone.intValue1 = iotSimpleEntity.intValue1;
+        clone.intValue2 = iotSimpleEntity.intValue2;
+        clone.longValue1 = iotSimpleEntity.longValue1;
+        clone.longValue2 = iotSimpleEntity.longValue2;
+        clone.doubleValue1 = iotSimpleEntity.doubleValue1;
+        clone.doubleValue2 = iotSimpleEntity.doubleValue2;
+        clone.stringValue1 = new String(iotSimpleEntity.stringValue1);
+        return clone;
+    }
 }
