@@ -716,7 +716,12 @@ public class CodecUtil {
         List<Byte> bytes = new ArrayList<>(constantLengthFields.size() * 4 + variableLengthFields.size() * 128);
         for (Field field : constantLengthFields) {
             field.setAccessible(true);
-            Byte[] fieldBytes = encode2(obj, field);
+            Byte[] fieldBytes;
+            if (protocolConfig.getEnableBaseLineCompression()) {
+                fieldBytes = encode2(obj, field, protocolConfig.getBaseLine());
+            } else {
+                fieldBytes = encode2(obj, field);
+            }
             for (Byte b : fieldBytes) {
                 if (b != null) {
                     bytes.add(b);
@@ -737,6 +742,32 @@ public class CodecUtil {
             bytesArray[i] = bytes.get(i);
         }
         return bytesArray;
+    }
+
+    public Byte[] encode2(Object obj, Field field, Object baseLineObj) throws Exception {
+        Class<?> fieldType = field.getType();
+        if (fieldType.equals(int.class) || fieldType.equals(Integer.class)) {
+            int value = (Integer) field.get(obj);
+            int baseLineValue = (Integer) field.get(baseLineObj);
+            return encodeInt(value ^ baseLineValue);
+        } else if (fieldType.equals(long.class) || fieldType.equals(Long.class)) {
+            long value = (Long) field.get(obj);
+            long baseLineValue = (Long) field.get(baseLineObj);
+            return encodeLong(value ^ baseLineValue);
+        } else if (fieldType.equals(double.class) || fieldType.equals(Double.class)) {
+            Double value = (Double) field.get(obj);
+            Double baseLineValue = (Double) field.get(baseLineObj);
+            if (protocolConfig.getEnableDoubleCompression()) {
+                long lValue = compressDoubleToLong(value);
+                long lBaseLineValue = compressDoubleToLong(baseLineValue);
+                return encodeLong(lValue ^ lBaseLineValue);
+            }
+            long lValue = Double.doubleToLongBits(value);
+            long lBaseLineValue = Double.doubleToLongBits(baseLineValue);
+            return encodeLong(lValue ^ lBaseLineValue);
+        } else {
+            throw new Exception("Unsupported field type: " + fieldType.getName());
+        }
     }
 
     public Byte[] encode2(Object obj, Field field) throws Exception {
@@ -838,7 +869,11 @@ public class CodecUtil {
     public int decodeConstantBytes2(byte[] bytes, int offset, Field field, Object obj) throws Exception {
         Class<?> fieldType = field.getType();
         byte[] fieldBytes = getConstantBytes2(bytes, offset);
-        field.set(obj, decodeConstantFieldBytes2(fieldBytes, fieldType));
+        if (protocolConfig.getEnableBaseLineCompression()) {
+            field.set(obj, decodeConstantFieldBytes2(fieldBytes, fieldType, field.get(protocolConfig.getBaseLine())));
+        } else {
+            field.set(obj, decodeConstantFieldBytes2(fieldBytes, fieldType));
+        }
         return fieldBytes.length;
     }
 
@@ -866,6 +901,24 @@ public class CodecUtil {
                 return deCompressDoubleFromLong(l);
             }
             return Double.longBitsToDouble(l);
+        } else {
+            throw new Exception("type not support");
+        }
+    }
+
+    public Object decodeConstantFieldBytes2(byte[] bytes, Class<?> clazz, Object baseLineObj) throws Exception {
+        if (clazz == int.class || clazz == Integer.class) {
+            return decodeInt(bytes) ^ (Integer) baseLineObj;
+        } else if (clazz == long.class || clazz == Long.class) {
+            return decodeLong(bytes) ^ (Long) baseLineObj;
+        } else if (clazz == double.class || clazz == Double.class) {
+            double baseLineDouble = (Double) baseLineObj;
+            long l = decodeLong(bytes);
+            if (protocolConfig.getEnableDoubleCompression()) {
+                return deCompressDoubleFromLong(l ^ compressDoubleToLong(baseLineDouble));
+            }
+            long baseLinel = Double.doubleToLongBits((Double) baseLineObj);
+            return Double.longBitsToDouble(l ^ baseLinel);
         } else {
             throw new Exception("type not support");
         }
