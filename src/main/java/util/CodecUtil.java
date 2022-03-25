@@ -1,14 +1,18 @@
 package util;
 
+import com.sun.xml.internal.messaging.saaj.util.ByteOutputStream;
 import handler.header.PlainBodyHeader;
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
 import java.time.*;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.PriorityQueue;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static util.CodecUtil.FieldType.*;
@@ -920,7 +924,7 @@ public class CodecUtil {
         }
     }
 
-    public static int decodeInt(byte[] buf) throws Exception {
+    public int decodeInt(byte[] buf) throws Exception {
         int len = 1;
         int b = buf[0] & 0xff;
         int n = b & 0x7f;
@@ -946,13 +950,65 @@ public class CodecUtil {
         return (n >>> 1) ^ -(n & 1); // back to two's-complement
     }
 
-    public static long decodeLong(byte[] buf) throws Exception {
+    public long decodeLong(byte[] buf) throws Exception {
         int len = 1;
         long b = buf[0] & 0xff;
         long n = b & 0x7f;
         while (b > 0x7f) {
             b = buf[len++] & 0xff;
             n ^= (b & 0x7f) << (7 * (len - 1));
+        }
+        return (n >>> 1) ^ -(n & 1); // back to two's-complement
+    }
+
+    public byte[] encode3(Object obj) throws Exception {
+        return null;
+    }
+
+    public ByteArrayOutputStream encodeWithoutBaseLine3(Object obj, Field field) throws Exception {
+        return null;
+    }
+
+    public ByteArrayOutputStream encodeInt3(ByteArrayOutputStream out, int n) throws Exception {
+        n = getZigZag(n);
+        while((n & ~0x7F) != 0) {
+            out.write((byte) ((n & 0x7F) | 0x80));
+            n >>>= 7;
+        }
+        out.write((byte) n);
+        return out;
+    }
+
+    public ByteArrayOutputStream encodeLong3(ByteArrayOutputStream out, long n) throws Exception {
+        n = getZigZag(n);
+        while ((n & (~0x7f)) != 0) {
+            out.write((byte) ((n & 0x7F) | 0x80));
+            n >>>= 7;
+        }
+        out.write((byte) n);
+        return out;
+    }
+
+    public int decodeInt3(ByteArrayInputStream in) throws Exception {
+        int b = in.read() & 0xff;
+        int n = b & 0x7f;
+        int len = 1;
+        while (b > 0x7f) {
+            b = in.read() & 0xff;
+            n ^= (b & 0x7f) << (7 * len);
+            len++;
+        }
+        return (n >>> 1) ^ -(n & 1); // back to two's-complement
+    }
+
+    public long decodeLong3(ByteArrayInputStream in) throws Exception {
+        long b = in.read() & 0xff;
+        long n = b & 0x7f;
+        int len = 1;
+        while (b > 0x7f) {
+            b = in.read() & 0xff;
+            n ^= (b & 0x7f) << (7 * len);
+            len++;
         }
         return (n >>> 1) ^ -(n & 1); // back to two's-complement
     }

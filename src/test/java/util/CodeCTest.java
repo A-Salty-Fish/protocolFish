@@ -8,6 +8,8 @@ import org.junit.Assert;
 import org.junit.Test;
 import proto.TestEntityOuterClass;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -555,5 +557,19 @@ public class CodeCTest {
             codecUtil.decode2(bytes, IotSimpleEntity.class);
         }
         FunctionMetricProxy.logDurations();
+    }
+
+    @Test
+    public void testDecode3LongAndInt() throws Exception {
+        CodecUtil codecUtil = new CodecUtil("");
+
+        System.out.println(codecUtil.decodeInt3(new ByteArrayInputStream(codecUtil.encodeInt3(new ByteArrayOutputStream(), 1).toByteArray())));
+        System.out.println(codecUtil.decodeInt3(new ByteArrayInputStream(codecUtil.encodeInt3(new ByteArrayOutputStream(), -1).toByteArray())));
+        System.out.println(codecUtil.decodeInt3(new ByteArrayInputStream(codecUtil.encodeInt3(new ByteArrayOutputStream(), 100000).toByteArray())));
+        System.out.println(codecUtil.decodeInt3(new ByteArrayInputStream(codecUtil.encodeInt3(new ByteArrayOutputStream(), -100000).toByteArray())));
+        System.out.println(codecUtil.decodeInt3(new ByteArrayInputStream(codecUtil.encodeInt3(new ByteArrayOutputStream(), 10000000).toByteArray())));
+        System.out.println(codecUtil.decodeInt3(new ByteArrayInputStream(codecUtil.encodeInt3(new ByteArrayOutputStream(), -10000000).toByteArray())));
+        System.out.println(codecUtil.decodeInt3(new ByteArrayInputStream(codecUtil.encodeInt3(new ByteArrayOutputStream(), Integer.MAX_VALUE).toByteArray())));
+        System.out.println(codecUtil.decodeInt3(new ByteArrayInputStream(codecUtil.encodeInt3(new ByteArrayOutputStream(), Integer.MIN_VALUE).toByteArray())));
     }
 }
