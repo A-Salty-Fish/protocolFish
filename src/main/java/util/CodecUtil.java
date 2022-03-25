@@ -823,8 +823,8 @@ public class CodecUtil {
         Byte[] buf = new Byte[5];
         int pos = 0;
         n = getZigZag(n);
-        while((n & ~0x7F) != 0) {
-            buf[pos++] = (byte)((n & 0x7F) | 0x80);
+        while ((n & ~0x7F) != 0) {
+            buf[pos++] = (byte) ((n & 0x7F) | 0x80);
             n >>>= 7;
         }
         buf[pos] = (byte) n;
@@ -963,13 +963,24 @@ public class CodecUtil {
         List<Field> constantLengthFields = constantLengthFieldMap.get(obj.getClass());
         List<Field> variableLengthFields = variableLengthFieldMap.get(obj.getClass());
         ByteArrayOutputStream out = new ByteArrayOutputStream(constantLengthFields.size() * 4 + variableLengthFields.size() * 32);
-        for (Field field : constantLengthFields) {
-            field.setAccessible(true);
-            encodeWithBaseLine3(out, field.get(obj));
-        }
-        for (Field field : variableLengthFields) {
-            field.setAccessible(true);
-            encodeWithBaseLine3(out, field.get(obj));
+        if (protocolConfig.getEnableBaseLineCompression()) {
+            for (Field field : constantLengthFields) {
+                field.setAccessible(true);
+                encodeWithBaseLine3(out, field.get(obj), field.get(protocolConfig.getBaseLine()));
+            }
+            for (Field field : variableLengthFields) {
+                field.setAccessible(true);
+                encodeWithBaseLine3(out, field.get(obj), field.get(protocolConfig.getBaseLine()));
+            }
+        } else {
+            for (Field field : constantLengthFields) {
+                field.setAccessible(true);
+                encodeWithOutBaseLine3(out, field.get(obj));
+            }
+            for (Field field : variableLengthFields) {
+                field.setAccessible(true);
+                encodeWithOutBaseLine3(out, field.get(obj));
+            }
         }
         return out.toByteArray();
     }
@@ -979,80 +990,116 @@ public class CodecUtil {
         List<Field> variableLengthFields = variableLengthFieldMap.get(clazz);
         ByteArrayInputStream in = new ByteArrayInputStream(bytes);
         T obj = clazz.newInstance();
-        for (Field field : constantLengthFields) {
-            field.setAccessible(true);
-            decodeWithoutBaseLine3(in, field, obj);
-        }
-        for (Field field : variableLengthFields) {
-            field.setAccessible(true);
-            decodeWithoutBaseLine3(in, field, obj);
+        if (protocolConfig.getEnableBaseLineCompression()) {
+            for (Field field : constantLengthFields) {
+                field.setAccessible(true);
+                decodeWithBaseLine3(in, field, obj, field.get(protocolConfig.getBaseLine()));
+            }
+            for (Field field : variableLengthFields) {
+                field.setAccessible(true);
+                decodeWithBaseLine3(in, field, obj, field.get(protocolConfig.getBaseLine()));
+            }
+        } else {
+            for (Field field : constantLengthFields) {
+                field.setAccessible(true);
+                decodeWithoutBaseLine3(in, field, obj);
+            }
+            for (Field field : variableLengthFields) {
+                field.setAccessible(true);
+                decodeWithoutBaseLine3(in, field, obj);
+            }
         }
         return obj;
     }
 
-    public ByteArrayOutputStream encodeWithBaseLine3(ByteArrayOutputStream out, Object obj) throws Exception {
+    public ByteArrayOutputStream encodeWithOutBaseLine3(ByteArrayOutputStream out, Object obj) throws Exception {
         Class<?> clazz = obj.getClass();
-        if (!protocolConfig.getEnableBaseLineCompression()) {
-            if (clazz == Integer.class) {
-                return encodeInt3(out, (Integer) obj);
-            } else if (clazz == Long.class) {
-                return encodeLong3(out, (Long) obj);
-            } else if (clazz == Double.class) {
-                if (protocolConfig.getEnableDoubleCompression()) {
-                    long doubleL = compressDoubleToLong((Double) obj);
-                    return encodeLong3(out, doubleL);
-                }
-                long doubleL = Double.doubleToLongBits((Double) obj);
+        if (clazz == Integer.class) {
+            return encodeInt3(out, (Integer) obj);
+        } else if (clazz == Long.class) {
+            return encodeLong3(out, (Long) obj);
+        } else if (clazz == Double.class) {
+            if (protocolConfig.getEnableDoubleCompression()) {
+                long doubleL = compressDoubleToLong((Double) obj);
                 return encodeLong3(out, doubleL);
-            } else if (clazz == String.class) {
-                return encodeString3(out, (String) obj);
-            } else {
-                throw new Exception("type not support");
             }
+            long doubleL = Double.doubleToLongBits((Double) obj);
+            return encodeLong3(out, doubleL);
+        } else if (clazz == String.class) {
+            return encodeString3(out, (String) obj);
         } else {
-            if (clazz == Integer.class) {
-                return encodeInt3(out, (Integer) obj);
-            } else if (clazz == Long.class) {
-                return encodeLong3(out, (Long) obj);
-            } else if (clazz == Double.class) {
-                long doubleL = Double.doubleToLongBits((Double) obj);
-                return encodeLong3(out, doubleL);
-            } else if (clazz == String.class) {
-                return encodeString3(out, (String) obj);
-            } else {
-                throw new Exception("type not support");
-            }
+            throw new Exception("type not support");
         }
     }
 
-    public ByteArrayInputStream decodeWithoutBaseLine3(ByteArrayInputStream in, Field field , Object obj) throws Exception {
-        Class<?> fieldType = field.getType();
-        if (!protocolConfig.getEnableBaseLineCompression()) {
-            if (fieldType == Integer.class || fieldType == int.class) {
-                field.set(obj, decodeInt3(in));
-            } else if (fieldType == Long.class || fieldType == long.class) {
-                field.set(obj, decodeLong3(in));
-            } else if (fieldType == Double.class || fieldType == double.class) {
-                long doubleL = decodeLong3(in);
-                if (protocolConfig.getEnableDoubleCompression()) {
-                    field.set(obj, deCompressDoubleFromLong(doubleL));
-                } else {
-                    field.set(obj, Double.longBitsToDouble(doubleL));
-                }
-            } else if (fieldType == String.class) {
-                field.set(obj, decodeString3(in));
-            } else {
-                throw new Exception("type not support");
+    public ByteArrayOutputStream encodeWithBaseLine3(ByteArrayOutputStream out, Object obj, Object baseLineObj) throws Exception {
+        Class<?> clazz = obj.getClass();
+        if (clazz == Integer.class) {
+            return encodeInt3(out, (Integer) obj ^ (Integer) baseLineObj);
+        } else if (clazz == Long.class) {
+            return encodeLong3(out, (Long) obj ^ (Long) baseLineObj);
+        } else if (clazz == Double.class) {
+            if (protocolConfig.getEnableDoubleCompression()) {
+                long doubleL = compressDoubleToLong((Double) obj);
+                long baseLineDoubleL = compressDoubleToLong((Double) baseLineObj);
+                return encodeLong3(out, doubleL ^ baseLineDoubleL);
             }
+            long doubleL = Double.doubleToLongBits((Double) obj);
+            long baseLineDoubleL = Double.doubleToLongBits((Double) baseLineObj);
+            return encodeLong3(out, doubleL ^ baseLineDoubleL);
+        } else if (clazz == String.class) {
+            return encodeString3(out, (String) obj);
         } else {
+            throw new Exception("type not support");
+        }
+    }
 
+    public ByteArrayInputStream decodeWithBaseLine3(ByteArrayInputStream in, Field field, Object obj, Object baseLineObj) throws Exception {
+        Class<?> fieldType = field.getType();
+        if (fieldType == Integer.class || fieldType == int.class) {
+            field.set(obj, decodeInt3(in) ^ (Integer) baseLineObj);
+        } else if (fieldType == Long.class || fieldType == long.class) {
+            field.set(obj, decodeLong3(in) ^ (Long) baseLineObj);
+        } else if (fieldType == Double.class || fieldType == double.class) {
+            long doubleL = decodeLong3(in);
+            double baseLineDouble = (Double) baseLineObj;
+            if (protocolConfig.getEnableDoubleCompression()) {
+                field.set(obj, deCompressDoubleFromLong(doubleL ^ compressDoubleToLong(baseLineDouble)));
+            } else {
+                field.set(obj, Double.longBitsToDouble(doubleL ^ Double.doubleToLongBits(baseLineDouble)));
+            }
+        } else if (fieldType == String.class) {
+            field.set(obj, decodeString3(in));
+        } else {
+            throw new Exception("type not support");
+        }
+        return in;
+    }
+
+    public ByteArrayInputStream decodeWithoutBaseLine3(ByteArrayInputStream in, Field field, Object obj) throws Exception {
+        Class<?> fieldType = field.getType();
+        if (fieldType == Integer.class || fieldType == int.class) {
+            field.set(obj, decodeInt3(in));
+        } else if (fieldType == Long.class || fieldType == long.class) {
+            field.set(obj, decodeLong3(in));
+        } else if (fieldType == Double.class || fieldType == double.class) {
+            long doubleL = decodeLong3(in);
+            if (protocolConfig.getEnableDoubleCompression()) {
+                field.set(obj, deCompressDoubleFromLong(doubleL));
+            } else {
+                field.set(obj, Double.longBitsToDouble(doubleL));
+            }
+        } else if (fieldType == String.class) {
+            field.set(obj, decodeString3(in));
+        } else {
+            throw new Exception("type not support");
         }
         return in;
     }
 
     public ByteArrayOutputStream encodeInt3(ByteArrayOutputStream out, int n) throws Exception {
         n = getZigZag(n);
-        while((n & ~0x7F) != 0) {
+        while ((n & ~0x7F) != 0) {
             out.write((byte) ((n & 0x7F) | 0x80));
             n >>>= 7;
         }
