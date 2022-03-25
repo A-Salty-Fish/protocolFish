@@ -615,4 +615,17 @@ public class CodeCTest {
         TestEntity testEntity2 = codecUtil.decode3(bytes, TestEntity.class);
         System.out.println(new Gson().toJson(testEntity2));
     }
+
+    @Test
+    public void testDecodeAndEncode3WithDoubleCompression() throws Exception {
+        ProtocolConfig protocolConfig = ProtocolConfig.defaultConfig();
+        protocolConfig.setEnableDoubleCompression(true);
+        protocolConfig.setDoubleCompressionAccuracy(2);
+        CodecUtil codecUtil = new CodecUtil(protocolConfig);
+        TestEntity testEntity = TestEntity.getRandomTestEntity(255.0);
+        System.out.println(new Gson().toJson(testEntity));
+        byte[] bytes = codecUtil.encode3(testEntity);
+        TestEntity testEntity2 = codecUtil.decode3(bytes, TestEntity.class);
+        System.out.println(new Gson().toJson(testEntity2));
+    }
 }

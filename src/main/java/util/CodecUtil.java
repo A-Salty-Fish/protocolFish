@@ -1,6 +1,5 @@
 package util;
 
-import com.sun.xml.internal.messaging.saaj.util.ByteOutputStream;
 import handler.header.PlainBodyHeader;
 import lombok.extern.slf4j.Slf4j;
 
@@ -12,7 +11,6 @@ import java.time.*;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.PriorityQueue;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static util.CodecUtil.FieldType.*;
@@ -967,11 +965,11 @@ public class CodecUtil {
         ByteArrayOutputStream out = new ByteArrayOutputStream(constantLengthFields.size() * 4 + variableLengthFields.size() * 32);
         for (Field field : constantLengthFields) {
             field.setAccessible(true);
-            encodeWithoutBaseLine3(out, field.get(obj));
+            encodeWithBaseLine3(out, field.get(obj));
         }
         for (Field field : variableLengthFields) {
             field.setAccessible(true);
-            encodeWithoutBaseLine3(out, field.get(obj));
+            encodeWithBaseLine3(out, field.get(obj));
         }
         return out.toByteArray();
     }
@@ -992,35 +990,62 @@ public class CodecUtil {
         return obj;
     }
 
-    public ByteArrayOutputStream encodeWithoutBaseLine3(ByteArrayOutputStream out, Object obj) throws Exception {
+    public ByteArrayOutputStream encodeWithBaseLine3(ByteArrayOutputStream out, Object obj) throws Exception {
         Class<?> clazz = obj.getClass();
-        if (clazz == Integer.class) {
-            return encodeInt3(out, (Integer) obj);
-        } else if (clazz == Long.class) {
-            return encodeLong3(out, (Long) obj);
-        } else if (clazz == Double.class) {
-            long doubleL = Double.doubleToLongBits((Double) obj);
-            return encodeLong3(out, doubleL);
-        } else if (clazz == String.class) {
-            return encodeString3(out, (String) obj);
+        if (!protocolConfig.getEnableBaseLineCompression()) {
+            if (clazz == Integer.class) {
+                return encodeInt3(out, (Integer) obj);
+            } else if (clazz == Long.class) {
+                return encodeLong3(out, (Long) obj);
+            } else if (clazz == Double.class) {
+                if (protocolConfig.getEnableDoubleCompression()) {
+                    long doubleL = compressDoubleToLong((Double) obj);
+                    return encodeLong3(out, doubleL);
+                }
+                long doubleL = Double.doubleToLongBits((Double) obj);
+                return encodeLong3(out, doubleL);
+            } else if (clazz == String.class) {
+                return encodeString3(out, (String) obj);
+            } else {
+                throw new Exception("type not support");
+            }
         } else {
-            throw new Exception("type not support");
+            if (clazz == Integer.class) {
+                return encodeInt3(out, (Integer) obj);
+            } else if (clazz == Long.class) {
+                return encodeLong3(out, (Long) obj);
+            } else if (clazz == Double.class) {
+                long doubleL = Double.doubleToLongBits((Double) obj);
+                return encodeLong3(out, doubleL);
+            } else if (clazz == String.class) {
+                return encodeString3(out, (String) obj);
+            } else {
+                throw new Exception("type not support");
+            }
         }
     }
 
     public ByteArrayInputStream decodeWithoutBaseLine3(ByteArrayInputStream in, Field field , Object obj) throws Exception {
         Class<?> fieldType = field.getType();
-        if (fieldType == Integer.class || fieldType == int.class) {
-            field.set(obj, decodeInt3(in));
-        } else if (fieldType == Long.class || fieldType == long.class) {
-            field.set(obj, decodeLong3(in));
-        } else if (fieldType == Double.class || fieldType == double.class) {
-            long doubleL = decodeLong3(in);
-            field.set(obj, Double.longBitsToDouble(doubleL));
-        } else if (fieldType == String.class) {
-            field.set(obj, decodeString3(in));
+        if (!protocolConfig.getEnableBaseLineCompression()) {
+            if (fieldType == Integer.class || fieldType == int.class) {
+                field.set(obj, decodeInt3(in));
+            } else if (fieldType == Long.class || fieldType == long.class) {
+                field.set(obj, decodeLong3(in));
+            } else if (fieldType == Double.class || fieldType == double.class) {
+                long doubleL = decodeLong3(in);
+                if (protocolConfig.getEnableDoubleCompression()) {
+                    field.set(obj, deCompressDoubleFromLong(doubleL));
+                } else {
+                    field.set(obj, Double.longBitsToDouble(doubleL));
+                }
+            } else if (fieldType == String.class) {
+                field.set(obj, decodeString3(in));
+            } else {
+                throw new Exception("type not support");
+            }
         } else {
-            throw new Exception("type not support");
+
         }
         return in;
     }
