@@ -571,5 +571,21 @@ public class CodeCTest {
         System.out.println(codecUtil.decodeInt3(new ByteArrayInputStream(codecUtil.encodeInt3(new ByteArrayOutputStream(), -10000000).toByteArray())));
         System.out.println(codecUtil.decodeInt3(new ByteArrayInputStream(codecUtil.encodeInt3(new ByteArrayOutputStream(), Integer.MAX_VALUE).toByteArray())));
         System.out.println(codecUtil.decodeInt3(new ByteArrayInputStream(codecUtil.encodeInt3(new ByteArrayOutputStream(), Integer.MIN_VALUE).toByteArray())));
+
+        System.out.println(codecUtil.decodeLong3(new ByteArrayInputStream(codecUtil.encodeLong3(new ByteArrayOutputStream(), 1).toByteArray())));
+        System.out.println(codecUtil.decodeLong3(new ByteArrayInputStream(codecUtil.encodeLong3(new ByteArrayOutputStream(), -1).toByteArray())));
+        System.out.println(codecUtil.decodeLong3(new ByteArrayInputStream(codecUtil.encodeLong3(new ByteArrayOutputStream(), 100000).toByteArray())));
+        System.out.println(codecUtil.decodeLong3(new ByteArrayInputStream(codecUtil.encodeLong3(new ByteArrayOutputStream(), -100000).toByteArray())));
+        System.out.println(codecUtil.decodeLong3(new ByteArrayInputStream(codecUtil.encodeLong3(new ByteArrayOutputStream(), 10000000).toByteArray())));
+        System.out.println(codecUtil.decodeLong3(new ByteArrayInputStream(codecUtil.encodeLong3(new ByteArrayOutputStream(), -10000000).toByteArray())));
+        System.out.println(codecUtil.decodeLong3(new ByteArrayInputStream(codecUtil.encodeLong3(new ByteArrayOutputStream(), Integer.MAX_VALUE).toByteArray())));
+        System.out.println(codecUtil.decodeLong3(new ByteArrayInputStream(codecUtil.encodeLong3(new ByteArrayOutputStream(), Long.MAX_VALUE).toByteArray())));
+        System.out.println(codecUtil.decodeLong3(new ByteArrayInputStream(codecUtil.encodeLong3(new ByteArrayOutputStream(), Integer.MAX_VALUE * 1000L).toByteArray())));
+        System.out.println(codecUtil.decodeLong3(new ByteArrayInputStream(codecUtil.encodeLong3(new ByteArrayOutputStream(), Integer.MAX_VALUE * 1000L).toByteArray())));
+        System.out.println(codecUtil.decodeLong3(new ByteArrayInputStream(codecUtil.encodeLong3(new ByteArrayOutputStream(), Integer.MAX_VALUE * 1000000L).toByteArray())));
+        System.out.println(codecUtil.decodeLong3(new ByteArrayInputStream(codecUtil.encodeLong3(new ByteArrayOutputStream(), Integer.MIN_VALUE * 1000L).toByteArray())));
+        System.out.println(codecUtil.decodeLong3(new ByteArrayInputStream(codecUtil.encodeLong3(new ByteArrayOutputStream(), Long.MIN_VALUE).toByteArray())));
+        System.out.println(codecUtil.decodeLong3(new ByteArrayInputStream(codecUtil.encodeLong3(new ByteArrayOutputStream(), Integer.MIN_VALUE * 1000000L).toByteArray())));
+
     }
 }
