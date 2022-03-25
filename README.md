@@ -75,14 +75,20 @@ public class IotSimpleEntity {
 benchmark code
 file (https://github.com/A-Salty-Fish/protocolFish/blob/main/src/main/java/benchmark/EncodeBenchmark.java)
 
-benchmark result file (https://github.com/A-Salty-Fish/protocolFish/blob/main/jmh-encode-with-baseLine.json)
+benchmark result file (https://github.com/A-Salty-Fish/protocolFish/blob/main/jmh-encode-decode.json)
 
 benchmark result chart:   
 ![](./jmh-encode.png)
 
-faster than json and xml, but slower than protobuf
+1 is bit operation based on byte array  
+2 is byte array operation  
+3 is byte stream operation  
 
-### compression rate
+1 has the most compact struct and has the best decode performance, while its encode is slower than 3.  
+2 and 3 has the same struct, so we can use any of them to encode and decode.  
+So the best choice is use 2 to decode and 3 to encode.  
+
+### compression rate (2 is the same as 3)
 
 compression code
 file (https://github.com/A-Salty-Fish/protocolFish/blob/main/src/main/java/benchmark/TestCompressionRate.java)

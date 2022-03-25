@@ -93,6 +93,7 @@ public class TestCompressionRate {
         CodecUtil codecUtil = new CodecUtil(protocolConfig);
         long myLength2 = 0;
         long myLength1 = 0;
+        long myLength3 = 0;
         long protobufLength = 0;
         long jsonLength = 0;
         long xmlLength = 0;
@@ -100,12 +101,14 @@ public class TestCompressionRate {
             iotSimpleEntity = IotSimpleEntity.randomNearIotSimpleEntity(iotSimpleEntity, 10.0, 4, 1000, 20);
             myLength1 += codecUtil.encode(iotSimpleEntity).length;
             myLength2 += codecUtil.encode2(iotSimpleEntity).length;
+            myLength3 += codecUtil.encode3(iotSimpleEntity).length;
             protobufLength += ProtobufCountUtil.countBytes(iotSimpleEntity);
             jsonLength += gson.toJson(iotSimpleEntity).getBytes().length;
             xmlLength += XmlUtil.convertToXml(iotSimpleEntity).getBytes().length;
         }
         System.out.println("|myLength1\t|" + myLength1 + "|\t");
         System.out.println("|myLength2\t|" + myLength2 + "|\t");
+        System.out.println("|myLength3\t|" + myLength3 + "|\t");
         System.out.println("|protobufLength\t| " + protobufLength + "|\t");
         System.out.println("|jsonLength:\t|" + jsonLength + "|\t");
         System.out.println("|xmlLength:\t|" + xmlLength + "|\t");
