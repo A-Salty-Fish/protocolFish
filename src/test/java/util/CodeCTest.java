@@ -645,4 +645,20 @@ public class CodeCTest {
         System.out.println(bytes.length);
         System.out.println(new Gson().toJson(codecUtil.decode3(bytes, TestEntity.class)));
     }
+
+    @Test
+    public void TestEncode3AndDecode2() throws Exception {
+        ProtocolConfig protocolConfig = ProtocolConfig.defaultConfig();
+        protocolConfig.setEnableBaseLineCompression(true);
+        protocolConfig.setDoubleCompressionAccuracy(2);
+        protocolConfig.setEnableDoubleCompression(true);
+        CodecUtil codecUtil = new CodecUtil(protocolConfig);
+        TestEntity testEntity = TestEntity.getRandomTestEntity(255.0);
+        protocolConfig.setBaseLine(testEntity);
+
+        TestEntity testEntity2 = TestEntity.getNextNearRandomTestEntity(testEntity);
+        System.out.println(new Gson().toJson(testEntity2));
+        byte[] bytes = codecUtil.encode3(testEntity2);
+        System.out.println(new Gson().toJson(codecUtil.decode2(bytes, TestEntity.class)));
+    }
 }

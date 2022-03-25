@@ -41,6 +41,8 @@ public class EncodeBenchmark {
 
     byte[] bytes2;
 
+    byte[] bytes3;
+
     byte[] protoBytes;
 
     CodecUtil codecUtil;
@@ -66,6 +68,7 @@ public class EncodeBenchmark {
         codecUtil = new CodecUtil(protocolConfig);
         bytes = codecUtil.encode(entity);
         bytes2 = codecUtil.encode2(entity);
+        bytes3 = codecUtil.encode3(entity);
         protoBytes = protoEntity.toByteArray();
 
         json = gson.get().toJson(entity);
@@ -100,6 +103,16 @@ public class EncodeBenchmark {
     @Benchmark
     public void myDecode2(Blackhole bh) throws Exception {
         bh.consume(codecUtil.decode2(bytes2, TestEntity.class));
+    }
+
+    @Benchmark
+    public void myEncode3(Blackhole bh) throws Exception {
+        bh.consume(codecUtil.encode3(entity));
+    }
+
+    @Benchmark
+    public void myDecode3(Blackhole bh) throws Exception {
+        bh.consume(codecUtil.decode3(bytes3, TestEntity.class));
     }
 
     @Benchmark
@@ -141,9 +154,9 @@ public class EncodeBenchmark {
         Options options = new OptionsBuilder()
                 .include(EncodeBenchmark.class.getSimpleName())
                 .resultFormat(ResultFormatType.JSON)
-                .result("jmh-encode-with-baseLine.json")
+                .result("jmh-encode-decode.json")
                 .measurementIterations(1)
-                .measurementTime(TimeValue.seconds(5))
+                .measurementTime(TimeValue.seconds(30))
                 .threads(12)
                 .warmupForks(0)
                 .warmupIterations(0)
