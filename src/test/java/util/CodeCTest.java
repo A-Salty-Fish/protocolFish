@@ -588,4 +588,15 @@ public class CodeCTest {
         System.out.println(codecUtil.decodeLong3(new ByteArrayInputStream(codecUtil.encodeLong3(new ByteArrayOutputStream(), Integer.MIN_VALUE * 1000000L).toByteArray())));
 
     }
+
+    @Test
+    public void testEncodeAndDecodeString() throws Exception {
+        CodecUtil codecUtil = new CodecUtil("");
+        System.out.println(codecUtil.decodeString3(new ByteArrayInputStream(codecUtil.encodeString3(new ByteArrayOutputStream(), "hello").toByteArray())));
+        System.out.println(codecUtil.decodeString3(new ByteArrayInputStream(codecUtil.encodeString3(new ByteArrayOutputStream(), "hello world").toByteArray())));
+        System.out.println(codecUtil.decodeString3(new ByteArrayInputStream(codecUtil.encodeString3(new ByteArrayOutputStream(), "").toByteArray())));
+        System.out.println(codecUtil.decodeString3(new ByteArrayInputStream(codecUtil.encodeString3(new ByteArrayOutputStream(), "\t\n").toByteArray())));
+        System.out.println(codecUtil.decodeString3(new ByteArrayInputStream(codecUtil.encodeString3(new ByteArrayOutputStream(), "0").toByteArray())));
+        System.out.println(codecUtil.decodeString3(new ByteArrayInputStream(codecUtil.encodeString3(new ByteArrayOutputStream(), "hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh").toByteArray())));
+    }
 }

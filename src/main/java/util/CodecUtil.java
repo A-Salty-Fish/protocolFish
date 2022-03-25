@@ -989,6 +989,21 @@ public class CodecUtil {
         return out;
     }
 
+    public ByteArrayOutputStream encodeString3(ByteArrayOutputStream out, String str) throws Exception {
+        byte[] strBytes = str.getBytes(protocolConfig.getCharset());
+        int length = strBytes.length;
+        encodeInt3(out, length);
+        out.write(strBytes);
+        return out;
+    }
+
+    public String decodeString3(ByteArrayInputStream in) throws Exception {
+        int length = decodeInt3(in);
+        byte[] strBytes = new byte[length];
+        in.read(strBytes);
+        return new String(strBytes, protocolConfig.getCharset());
+    }
+
     public int decodeInt3(ByteArrayInputStream in) throws Exception {
         int b = in.read() & 0xff;
         int n = b & 0x7f;
