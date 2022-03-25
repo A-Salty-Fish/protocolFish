@@ -5,6 +5,7 @@ import demo.IotSimpleEntity;
 import demo.TestEntity;
 import demo.TestXmlEntity;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import proto.TestEntityOuterClass;
 
@@ -24,6 +25,11 @@ import java.util.Random;
  */
 
 public class CodeCTest {
+
+    @Before
+    public void register() {
+        CodecUtil.registerClass(TestEntity.class);
+    }
 
     public static void main(String[] args) throws IllegalAccessException {
         CodecUtil.registerClass(TestEntity.class);
@@ -598,5 +604,15 @@ public class CodeCTest {
         System.out.println(codecUtil.decodeString3(new ByteArrayInputStream(codecUtil.encodeString3(new ByteArrayOutputStream(), "\t\n").toByteArray())));
         System.out.println(codecUtil.decodeString3(new ByteArrayInputStream(codecUtil.encodeString3(new ByteArrayOutputStream(), "0").toByteArray())));
         System.out.println(codecUtil.decodeString3(new ByteArrayInputStream(codecUtil.encodeString3(new ByteArrayOutputStream(), "hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh").toByteArray())));
+    }
+
+    @Test
+    public void testDecodeAndEncode3() throws Exception {
+        CodecUtil codecUtil = new CodecUtil("");
+        TestEntity testEntity = TestEntity.getRandomTestEntity();
+        System.out.println(new Gson().toJson(testEntity));
+        byte[] bytes = codecUtil.encode3(testEntity);
+        TestEntity testEntity2 = codecUtil.decode3(bytes, TestEntity.class);
+        System.out.println(new Gson().toJson(testEntity2));
     }
 }

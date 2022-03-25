@@ -962,11 +962,67 @@ public class CodecUtil {
     }
 
     public byte[] encode3(Object obj) throws Exception {
-        return null;
+        List<Field> constantLengthFields = constantLengthFieldMap.get(obj.getClass());
+        List<Field> variableLengthFields = variableLengthFieldMap.get(obj.getClass());
+        ByteArrayOutputStream out = new ByteArrayOutputStream(constantLengthFields.size() * 4 + variableLengthFields.size() * 32);
+        for (Field field : constantLengthFields) {
+            field.setAccessible(true);
+            encodeWithoutBaseLine3(out, field.get(obj));
+        }
+        for (Field field : variableLengthFields) {
+            field.setAccessible(true);
+            encodeWithoutBaseLine3(out, field.get(obj));
+        }
+        return out.toByteArray();
     }
 
-    public ByteArrayOutputStream encodeWithoutBaseLine3(Object obj, Field field) throws Exception {
-        return null;
+    public <T> T decode3(byte[] bytes, Class<T> clazz) throws Exception {
+        List<Field> constantLengthFields = constantLengthFieldMap.get(clazz);
+        List<Field> variableLengthFields = variableLengthFieldMap.get(clazz);
+        ByteArrayInputStream in = new ByteArrayInputStream(bytes);
+        T obj = clazz.newInstance();
+        for (Field field : constantLengthFields) {
+            field.setAccessible(true);
+            decodeWithoutBaseLine3(in, field, obj);
+        }
+        for (Field field : variableLengthFields) {
+            field.setAccessible(true);
+            decodeWithoutBaseLine3(in, field, obj);
+        }
+        return obj;
+    }
+
+    public ByteArrayOutputStream encodeWithoutBaseLine3(ByteArrayOutputStream out, Object obj) throws Exception {
+        Class<?> clazz = obj.getClass();
+        if (clazz == Integer.class) {
+            return encodeInt3(out, (Integer) obj);
+        } else if (clazz == Long.class) {
+            return encodeLong3(out, (Long) obj);
+        } else if (clazz == Double.class) {
+            long doubleL = Double.doubleToLongBits((Double) obj);
+            return encodeLong3(out, doubleL);
+        } else if (clazz == String.class) {
+            return encodeString3(out, (String) obj);
+        } else {
+            throw new Exception("type not support");
+        }
+    }
+
+    public ByteArrayInputStream decodeWithoutBaseLine3(ByteArrayInputStream in, Field field , Object obj) throws Exception {
+        Class<?> fieldType = field.getType();
+        if (fieldType == Integer.class || fieldType == int.class) {
+            field.set(obj, decodeInt3(in));
+        } else if (fieldType == Long.class || fieldType == long.class) {
+            field.set(obj, decodeLong3(in));
+        } else if (fieldType == Double.class || fieldType == double.class) {
+            long doubleL = decodeLong3(in);
+            field.set(obj, Double.longBitsToDouble(doubleL));
+        } else if (fieldType == String.class) {
+            field.set(obj, decodeString3(in));
+        } else {
+            throw new Exception("type not support");
+        }
+        return in;
     }
 
     public ByteArrayOutputStream encodeInt3(ByteArrayOutputStream out, int n) throws Exception {
