@@ -56,20 +56,44 @@ public class CompressionRateTestUtil {
         return obj;
     }
 
-    public static <T> T near(T t, int iStep, int lStep, double dStep, int strMaxLength) throws Exception {
+    public static <T> T random(Class<T> clazz, int strLength) throws Exception {
+        T obj = clazz.newInstance();
+        Random random = new Random();
+        for (Field field : clazz.getDeclaredFields()) {
+            Class<?> type = field.getType();
+            if (type.equals(int.class) || type.equals(Integer.class)) {
+                field.set(obj, random.nextInt());
+            } else if (type.equals(long.class) || type.equals(Long.class)) {
+                field.set(obj, random.nextLong());
+            } else if (type.equals(double.class) || type.equals(Double.class)) {
+                field.set(obj, random.nextDouble() * random.nextLong());
+            } else if (type.equals(String.class)) {
+                StringBuilder sb = new StringBuilder(strLength);
+                for (int i = 0; i < strLength; i++) {
+                    sb.append((char) (random.nextInt(26) + 'a'));
+                }
+                field.set(obj, sb.toString());
+            } else {
+                throw new Exception("type not support");
+            }
+        }
+        return obj;
+    }
+
+    public static <T> T near(T t, int iStep, int lStep, double dStep) throws Exception {
         T obj = clone(t);
         Random random = new Random();
         for (Field field : t.getClass().getDeclaredFields()) {
             Class<?> type = field.getType();
             if (type.equals(int.class) || type.equals(Integer.class)) {
-                field.set(obj, ((Integer) field.get(obj)).intValue() + random.nextInt(iStep) - iStep / 2);
+                field.set(obj, ((Integer) field.get(t)).intValue() + random.nextInt(iStep) - iStep / 2);
             } else if (type.equals(long.class) || type.equals(Long.class)) {
-                field.set(obj, ((Long) field.get(obj)).longValue() + random.nextInt(lStep) - lStep / 2);
+                field.set(obj, ((Long) field.get(t)).longValue() + random.nextInt(lStep) - lStep / 2);
             } else if (type.equals(double.class) || type.equals(Double.class)) {
-                field.set(obj, ((Double) field.get(obj)).doubleValue() + random.nextDouble() * dStep - dStep / 2);
+                field.set(obj, ((Double) field.get(t)).doubleValue() + random.nextDouble() * dStep - dStep / 2);
             } else if (type.equals(String.class)) {
-                String str = (String) field.get(obj);
-                field.set(obj, str.substring(0, Math.min(str.length(), random.nextInt(strMaxLength + 1))));
+                String str = (String) field.get(t);
+                field.set(obj, str);
             } else {
                 throw new Exception("type not support");
             }
