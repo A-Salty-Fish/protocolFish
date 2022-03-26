@@ -22,4 +22,10 @@ public class TestCompressionRate2 {
         System.out.println(new Gson().toJson(testEntity2));
     }
 
+    @Test
+    public void testRandom() throws Exception {
+        TestEntity testEntity = CompressionRateTestUtil.random(TestEntity.class);
+        System.out.println(new Gson().toJson(testEntity));
+    }
+
 }

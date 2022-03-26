@@ -1,6 +1,7 @@
 package util;
 
 import java.lang.reflect.Field;
+import java.util.Random;
 
 /**
  * @author 13090
@@ -35,4 +36,21 @@ public class CompressionRateTestUtil {
         return obj;
     }
 
+    public static <T> T random(Class<T> clazz) throws Exception {
+        T obj = clazz.newInstance();
+        Random random = new Random();
+        for (Field field : clazz.getDeclaredFields()) {
+            Class<?> type = field.getType();
+            if (type.equals(int.class) || type.equals(Integer.class)) {
+                field.set(obj, random.nextInt());
+            } else if (type.equals(long.class) || type.equals(Long.class)) {
+                field.set(obj, random.nextLong());
+            } else if (type.equals(double.class) || type.equals(Double.class)) {
+                field.set(obj, random.nextDouble() * random.nextLong());
+            } else if (type.equals(String.class)) {
+                field.set(obj, String.valueOf(random.nextLong()));
+            }
+        }
+        return obj;
+    }
 }
