@@ -154,3 +154,6 @@ now just half of the protobuf size.
 
 1. Gorilla: a fast, scalable, in-memory time series database (https://dl.acm.org/doi/10.14778/2824032.2824078)
 2. Netty (https://netty.io/)
+
+### dataset
+https://www.kaggle.com/datasets/taranvee/smart-home-dataset-with-weather-information
