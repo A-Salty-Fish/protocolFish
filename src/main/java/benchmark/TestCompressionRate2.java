@@ -28,4 +28,11 @@ public class TestCompressionRate2 {
         System.out.println(new Gson().toJson(testEntity));
     }
 
+    @Test
+    public void testNear() throws Exception {
+        TestEntity testEntity = CompressionRateTestUtil.random(TestEntity.class);
+        System.out.println(new Gson().toJson(testEntity));
+        System.out.println(new Gson().toJson(CompressionRateTestUtil.near(testEntity, 10, 10, 1.0, 2)));
+    }
+
 }

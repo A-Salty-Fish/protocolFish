@@ -49,6 +49,29 @@ public class CompressionRateTestUtil {
                 field.set(obj, random.nextDouble() * random.nextLong());
             } else if (type.equals(String.class)) {
                 field.set(obj, String.valueOf(random.nextLong()));
+            } else {
+                throw new Exception("type not support");
+            }
+        }
+        return obj;
+    }
+
+    public static <T> T near(T t, int iStep, int lStep, double dStep, int strMaxLength) throws Exception {
+        T obj = clone(t);
+        Random random = new Random();
+        for (Field field : t.getClass().getDeclaredFields()) {
+            Class<?> type = field.getType();
+            if (type.equals(int.class) || type.equals(Integer.class)) {
+                field.set(obj, ((Integer) field.get(obj)).intValue() + random.nextInt(iStep) - iStep / 2);
+            } else if (type.equals(long.class) || type.equals(Long.class)) {
+                field.set(obj, ((Long) field.get(obj)).longValue() + random.nextInt(lStep) - lStep / 2);
+            } else if (type.equals(double.class) || type.equals(Double.class)) {
+                field.set(obj, ((Double) field.get(obj)).doubleValue() + random.nextDouble() * dStep - dStep / 2);
+            } else if (type.equals(String.class)) {
+                String str = (String) field.get(obj);
+                field.set(obj, str.substring(0, Math.min(str.length(), random.nextInt(strMaxLength + 1))));
+            } else {
+                throw new Exception("type not support");
             }
         }
         return obj;
