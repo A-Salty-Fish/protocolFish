@@ -1,11 +1,14 @@
 package benchmark;
 
 import com.google.gson.Gson;
+import demo.HomeIotEntity;
 import demo.IotSimpleEntity;
 import demo.TestEntity;
 import org.junit.Before;
 import org.junit.Test;
 import util.*;
+
+import java.util.List;
 
 /**
  * @author 13090
@@ -68,6 +71,61 @@ public class TestCompressionRate2 {
                 xmlLength += XmlUtil.convertToXml(testEntity).getBytes().length;
             }
             System.out.println("" + i + "\t" + myLength + "\t" + protobufLength + "\t" + jsonLength + "\t" + xmlLength);
+        }
+    }
+
+    @Test
+    public void testCompressionRateWithHomeIotData() throws Exception {
+        CodecUtil.registerClass(HomeIotEntity.class);
+        List<HomeIotEntity> homeIotEntities = CsvUtil.convertCsvFileToObjects(HomeIotEntity.class, "./data/HomeC.csv");
+        HomeIotEntity baseTestEntity = homeIotEntities.get(0);
+        protocolConfig.setEnableBaseLineCompression(true);
+        protocolConfig.setBaseLine(baseTestEntity);
+        codecUtil = new CodecUtil(protocolConfig);
+
+        long myLength1 = 0;
+        long myLength2 = 0;
+        long protobufLength = 0;
+        long jsonLength = 0;
+        System.out.println("step\tmy1\tmy2\tprotobuf\tjson\t");
+        for (HomeIotEntity homeIotEntity : homeIotEntities) {
+            protobufLength += ProtobufCountUtil.countBytes(homeIotEntity);
+            jsonLength += new Gson().toJson(homeIotEntity).getBytes().length;
+        }
+        for (int i = 0; i < homeIotEntities.size(); i++) {
+            HomeIotEntity homeIotEntity = homeIotEntities.get(i);
+            myLength1 += codecUtil.encode(homeIotEntity).length;
+            myLength2 += codecUtil.encode3(homeIotEntity).length;
+            protocolConfig.setBaseLine(homeIotEntity);
+        }
+        System.out.println("|" + 1 + "\t|" + myLength1 + "\t|" + myLength2 + "\t|" + protobufLength + "\t|" + jsonLength);
+        for (int step = 5; step <= 45; step += 5) {
+            myLength1 = 0;
+            myLength2 = 0;
+            protocolConfig.setBaseLine(baseTestEntity);
+            for (int i = 0; i < homeIotEntities.size(); i++) {
+                HomeIotEntity homeIotEntity = homeIotEntities.get(i);
+                myLength1 += codecUtil.encode(homeIotEntity).length;
+                myLength2 += codecUtil.encode3(homeIotEntity).length;
+                if (i % step == 0) {
+                    protocolConfig.setBaseLine(homeIotEntity);
+                }
+            }
+            System.out.println("|" + step + "\t|" + myLength1 + "\t|" + myLength2 + "\t|" + protobufLength + "\t|" + jsonLength);
+        }
+        for (int step = 50; step <= 1000; step += 50) {
+            myLength1 = 0;
+            myLength2 = 0;
+            protocolConfig.setBaseLine(baseTestEntity);
+            for (int i = 0; i < homeIotEntities.size(); i++) {
+                HomeIotEntity homeIotEntity = homeIotEntities.get(i);
+                myLength1 += codecUtil.encode(homeIotEntity).length;
+                myLength2 += codecUtil.encode3(homeIotEntity).length;
+                if (i % step == 0) {
+                    protocolConfig.setBaseLine(homeIotEntity);
+                }
+            }
+            System.out.println("|" + step + "\t|" + myLength1 + "\t|" + myLength2 + "\t|" + protobufLength + "\t|" + jsonLength);
         }
     }
 }

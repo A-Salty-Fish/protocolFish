@@ -88,7 +88,7 @@ benchmark result chart:
 2 and 3 has the same struct, so we can use any of them to encode and decode.  
 So the best choice is use 2 to decode and 3 to encode.  
 
-### compression rate (2 is the same as 3)
+### compression rate with random datasets (2 is the same as 3)
 
 compression code
 file (https://github.com/A-Salty-Fish/protocolFish/blob/main/src/main/java/benchmark/TestCompressionRate.java)
@@ -145,6 +145,46 @@ now just half of the protobuf size.
 | 1:            | 16.92% | 3.73%
 | 0:            | 15.63% | 3.40%
 
+### compression rate with true datasets
+
+dataset: (https://www.kaggle.com/datasets/taranvee/smart-home-dataset-with-weather-information)  
+step means that how often the baseLine object is changed.
+
+| step  | my1 |  my2 | protobuf | json |
+-----|-----| ----------- | ------| ------|
+|1	|75561590	|76182146	|143080950	|324611758
+|5	|77629790	|78618394	|143080950	|324611758
+|10	|79395562	|80710335	|143080950	|324611758
+|15	|80880040	|82490918	|143080950	|324611758
+|20	|82001410	|83839161	|143080950	|324611758
+|25	|83268607	|85375226	|143080950	|324611758
+|30	|84295644	|86616991	|143080950	|324611758
+|35	|85439474	|88006593	|143080950	|324611758
+|40	|86363743	|89104907	|143080950	|324611758
+|45	|87447910	|90438766	|143080950	|324611758
+|50	|88340404	|91517075	|143080950	|324611758
+|100	|94607809	|99054739	|143080950	|324611758
+|150	|97126084	|102066823	|143080950	|324611758
+|200	|98710913	|103920615	|143080950	|324611758
+|250	|99726654	|105124086	|143080950	|324611758
+|300	|100491054	|106015333	|143080950	|324611758
+|350	|101124657	|106756824	|143080950	|324611758
+|400	|101628248	|107342679	|143080950	|324611758
+|450	|102008752	|107808241	|143080950	|324611758
+|500	|102322578	|108211720	|143080950	|324611758
+|550	|102600745	|108539473	|143080950	|324611758
+|600	|102854262	|108854779	|143080950	|324611758
+|650	|103167669	|109254817	|143080950	|324611758
+|700	|103262884	|109378536	|143080950	|324611758
+|750	|103618351	|109831540	|143080950	|324611758
+|800	|103709455	|109892126	|143080950	|324611758
+|850	|103881509	|110158473	|143080950	|324611758
+|900	|103927079	|110190853	|143080950	|324611758
+|950	|103922755	|110203036	|143080950	|324611758
+|1000	|104101006	|110397522	|143080950	|324611758
+
+Process finished with exit code 0
+
 ## todo
 
 1. self-adaption baseLine change;
@@ -154,6 +194,3 @@ now just half of the protobuf size.
 
 1. Gorilla: a fast, scalable, in-memory time series database (https://dl.acm.org/doi/10.14778/2824032.2824078)
 2. Netty (https://netty.io/)
-
-### dataset
-https://www.kaggle.com/datasets/taranvee/smart-home-dataset-with-weather-information
