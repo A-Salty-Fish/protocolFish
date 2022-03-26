@@ -129,6 +129,22 @@ still close to protobuf(less than default)
 
 now just half of the protobuf size.
 
+### with baseLine compression config and different string length
+
+[the result xlsx file](./data/string%20length.xlsx)
+
+| string length |  my / protobuf   |  my / json
+---------------|--------| ----------- |
+| 128           | 72.40% | 32.94%
+| 64            | 58.59% | 20.95%
+| 32            | 43.75% | 12.88%
+| 16:           | 32.50% | 8.39%
+| 8:            | 25.00% | 5.96%
+| 4:            | 20.59% | 4.70%
+| 2:            | 18.18% | 4.05%
+| 1:            | 16.92% | 3.73%
+| 0:            | 15.63% | 3.40%
+
 ## todo
 
 1. self-adaption baseLine change;
