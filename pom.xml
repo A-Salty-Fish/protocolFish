@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.example</groupId>
+    <groupId>asalty.fish</groupId>
     <artifactId>protocolFish</artifactId>
     <version>1.0-SNAPSHOT</version>
 
@@ -81,30 +81,30 @@
 
     </dependencies>
 
-    <build>
-        <plugins>
-        <plugin>
-            <groupId>org.xolstice.maven.plugins</groupId>
-            <artifactId>protobuf-maven-plugin</artifactId>
-            <version>0.6.1</version>
+<!--    <build>-->
+<!--        <plugins>-->
+<!--        <plugin>-->
+<!--            <groupId>org.xolstice.maven.plugins</groupId>-->
+<!--            <artifactId>protobuf-maven-plugin</artifactId>-->
+<!--            <version>0.6.1</version>-->
 
-            <configuration><!-- proto文件目录 -->
-                <protoSourceRoot>src/main/resources/proto</protoSourceRoot>
-                <!-- 生成的Java文件目录 -->
-                <outputDirectory>${project.basedir}/src/resources/proto</outputDirectory>
-                <clearOutputDirectory>false</clearOutputDirectory>
-                <!--<outputDirectory>${project.build.directory}/generated-sources/protobuf</outputDirectory>-->
-            </configuration>
-            <executions>
-                <execution>
-                    <goals>
-                        <goal>compile</goal>
-                        <goal>test-compile</goal>
-                    </goals>
-                </execution>
-            </executions>
-        </plugin>
-        </plugins>
-    </build>
+<!--            <configuration>&lt;!&ndash; proto文件目录 &ndash;&gt;-->
+<!--                <protoSourceRoot>src/main/resources/proto</protoSourceRoot>-->
+<!--                &lt;!&ndash; 生成的Java文件目录 &ndash;&gt;-->
+<!--                <outputDirectory>${project.basedir}/src/resources/proto</outputDirectory>-->
+<!--                <clearOutputDirectory>false</clearOutputDirectory>-->
+<!--                &lt;!&ndash;<outputDirectory>${project.build.directory}/generated-sources/protobuf</outputDirectory>&ndash;&gt;-->
+<!--            </configuration>-->
+<!--            <executions>-->
+<!--                <execution>-->
+<!--                    <goals>-->
+<!--                        <goal>compile</goal>-->
+<!--                        <goal>test-compile</goal>-->
+<!--                    </goals>-->
+<!--                </execution>-->
+<!--            </executions>-->
+<!--        </plugin>-->
+<!--        </plugins>-->
+<!--    </build>-->
 
 </project>
