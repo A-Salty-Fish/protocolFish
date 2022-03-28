@@ -27,7 +27,6 @@ public class PlainHeaderHandler implements HeaderHandler {
     public RequestHandler getNextHandler(ChannelHandlerContext ctx, DatagramPacket packet) {
         ByteBuf byteBuffer = packet.content();
         if (ShakeHandHeader.isShakeHandHeader(byteBuffer)) {
-            handler(ctx, packet);
             return new ShakeHandHeaderHandler(isClient);
         } else if (PlainBodyHeader.isPlainBodyHeader(byteBuffer)) {
             return new PlainBodyHeaderHandler();

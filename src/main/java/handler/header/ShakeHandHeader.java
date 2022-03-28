@@ -2,6 +2,8 @@ package handler.header;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
+import util.ByteUtil;
+import util.CodecUtil;
 import util.ProtocolConfig;
 
 /**
@@ -24,17 +26,11 @@ public class ShakeHandHeader extends PlainHeader {
     }
 
     public static boolean isShakeHandHeader(ByteBuf byteBuf) {
-        if (byteBuf.readableBytes() != length) {
-            return false;
-        }
         int magicNum = byteBuf.getInt(0);
         return (magicNum & (1 << LabelPosition.IS_SHAKE_HAND_HEAD.value())) != 0;
     }
 
     public static boolean validShakeHandHeader(ByteBuf byteBuf) {
-        if (byteBuf.readableBytes() != length) {
-            return false;
-        }
         int magicNum = byteBuf.getInt(0);
         return (magicNum & 0x1ffff) == ShakeHandHeader.magicNum;
     }
@@ -49,5 +45,27 @@ public class ShakeHandHeader extends PlainHeader {
         label |= (protocolConfig.getEnableBaseLineCompression() ? 1 : 0) << LabelPosition.ENABLE_BASELINE_COMPRESSION.value();
         byteBuf.writeInt(label);
         return byteBuf;
+    }
+
+    public static ByteBuf getShakeHandHeaderWithBaseLineBody(Channel ch, ProtocolConfig protocolConfig, Object baseLine) {
+        protocolConfig.setEnableBaseLineCompression(false);
+        CodecUtil codecUtil = new CodecUtil(protocolConfig);
+        try {
+            byte[] baseLineBytes = codecUtil.encode3(baseLine);
+            protocolConfig.setEnableBaseLineCompression(true);
+            int baseLineLength = baseLineBytes.length;
+            ByteBuf byteBuf = ch.alloc().buffer(length + baseLineLength + 2, length + baseLineLength + 2);
+            byteBuf.writeInt(getShakeHandHeader(ch, protocolConfig).getInt(0) | (1 << LabelPosition.IS_PLAIN_BODY_HEAD.value()));
+            int classIdentity = CodecUtil.getIdentityByClass(baseLine.getClass()) & ByteUtil.getMask(PlainBodyHeader.PlainBodyLabelPosition.CLASS_IDENTITY.value());
+            byte[] classIdentityBytes = new byte[2];
+            classIdentityBytes[0] = (byte) ((classIdentity >> 8));
+            classIdentityBytes[1] = (byte) (classIdentity & 0xff);
+            byteBuf.writeBytes(classIdentityBytes);
+            byteBuf.writeBytes(baseLineBytes);
+            return byteBuf;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }

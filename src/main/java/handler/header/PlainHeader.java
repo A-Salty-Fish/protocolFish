@@ -77,4 +77,12 @@ public class PlainHeader {
             return this.value;
         }
     }
+
+    public static boolean isShakeHandHead(int label) {
+        return (label & (1 << LabelPosition.IS_SHAKE_HAND_HEAD.value())) != 0;
+    }
+
+    public static boolean isPlainBodyHead(int label) {
+        return (label & (1 << LabelPosition.IS_PLAIN_BODY_HEAD.value())) != 0;
+    }
 }

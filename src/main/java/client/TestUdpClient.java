@@ -40,8 +40,8 @@ public class TestUdpClient {
 
     public static void main(String[] args) throws InterruptedException {
         run();
-        shakeHand();
-        sendBody();
+        shakeHandWithBody();
+//        sendBody();
 //        shutDown();
     }
 
@@ -94,9 +94,17 @@ public class TestUdpClient {
     public static ProtocolConfig getClientProtocolConfig() {
         ProtocolConfig protocolConfig = ProtocolConfig.defaultConfig();
         protocolConfig.setVariableHeadByteLength(4);
-        protocolConfig.setEnableBaseLineCompression(false);
+        protocolConfig.setEnableBaseLineCompression(true);
         protocolConfig.setEnableDoubleCompression(false);
         protocolConfig.setDoubleCompressionAccuracy(12);
         return protocolConfig;
+    }
+
+    public static void shakeHandWithBody() throws InterruptedException {
+        TestEntity testEntity = TestEntity.getRandomTestEntity(255.0);
+        ByteBuf buf = ShakeHandHeader.getShakeHandHeaderWithBaseLineBody(channel, getClientProtocolConfig(), testEntity);
+        channel.writeAndFlush(new DatagramPacket(
+                buf,
+                new InetSocketAddress(serverHostName, serverPort))).sync();
     }
 }

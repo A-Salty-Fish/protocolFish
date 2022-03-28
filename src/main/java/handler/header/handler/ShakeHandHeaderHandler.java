@@ -2,11 +2,13 @@ package handler.header.handler;
 
 import com.google.gson.Gson;
 import handler.RequestHandler;
+import handler.header.PlainHeader;
 import handler.header.ShakeHandHeader;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.socket.DatagramPacket;
 import lombok.extern.slf4j.Slf4j;
+import util.CodecUtil;
 import util.ProtocolConfig;
 import util.ServerStoreConfig;
 
@@ -52,6 +54,25 @@ public class ShakeHandHeaderHandler implements HeaderHandler {
         if (!isClient) {
             int label = packet.content().readInt();
             ProtocolConfig protocolConfig = ProtocolConfig.getProtocolFromLabel(label);
+            if (PlainHeader.isPlainBodyHead(label) && protocolConfig.getEnableBaseLineCompression()) {
+                byte[] bytes = new byte[2];
+                packet.content().readBytes(bytes);
+                int classIdentity = (bytes[0] & 0xff) << 8 | (bytes[1] & 0xff) ;
+                Class<?> clazz = CodecUtil.getClassByIdentity(classIdentity);
+                if (clazz != null) {
+                    byte[] body = new byte[packet.content().readableBytes()];
+                    packet.content().readBytes(body);
+                    protocolConfig.setEnableBaseLineCompression(false);
+                    CodecUtil codecUtil = new CodecUtil(protocolConfig);
+                    try {
+                        Object baseLineObj = codecUtil.decode3(body, clazz);
+                        protocolConfig.setBaseLine(baseLineObj);
+                        protocolConfig.setEnableDoubleCompression(true);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
             InetSocketAddress address = packet.sender();
             ServerStoreConfig.put(ServerStoreConfig.getKey(address.getAddress().getHostAddress()), protocolConfig);
             log.info(address.getAddress().getHostAddress() + " protocol:" + new Gson().toJson(protocolConfig));;
