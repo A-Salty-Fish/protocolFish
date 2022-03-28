@@ -21,11 +21,13 @@ public class TestUdpServer {
 
     public static int serverPort = 7397;
 
+    public static int threads = 12;
+
     public static void main(String[] args) throws InterruptedException {
         run();
     }
 
-    static EventLoopGroup group = new NioEventLoopGroup();
+    static EventLoopGroup group = new NioEventLoopGroup(threads);
 
     static ChannelFuture channelFuture;
 

@@ -34,7 +34,9 @@ public class TestUdpClient {
 
     public static int clientPort = 7398;
 
-    static EventLoopGroup group = new NioEventLoopGroup();
+    public static int threads = 12;
+
+    static EventLoopGroup group;
 
     static Channel channel;
 
@@ -48,6 +50,7 @@ public class TestUdpClient {
     public static void run() throws InterruptedException {
         CodecUtil.registerClass(TestEntity.class);
         try {
+            group = new NioEventLoopGroup(threads);
             Bootstrap b = new Bootstrap();
             b.group(group).channel(NioDatagramChannel.class)
                     .handler(new TestClientChannelInitializer());
