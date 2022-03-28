@@ -205,4 +205,26 @@ public class TestCompressionRate2 {
         }
         System.out.println("|" + myLength1 + "\t|" + myLength2 + "\t|" + protobufLength + "\t|" + jsonLength);
     }
+
+    @Test
+    public void testCompressionRateOnlyWithDoubleConfig() throws Exception {
+        CodecUtil.registerClass(HomeIotEntity.class);
+        List<HomeIotEntity> homeIotEntities = CsvUtil.convertCsvFileToObjects(HomeIotEntity.class, "./data/HomeC.csv");
+        protocolConfig.setEnableDoubleCompression(true);
+        protocolConfig.setDoubleCompressionAccuracy(4);
+        codecUtil = new CodecUtil(protocolConfig);
+
+        long myLength1 = 0;
+        long myLength2 = 0;
+        long protobufLength = 0;
+        long jsonLength = 0;
+        System.out.println("step\tmy1\tmy2\tprotobuf\tjson\t");
+        for (HomeIotEntity homeIotEntity : homeIotEntities) {
+            protobufLength += ProtobufCountUtil.countBytes(homeIotEntity);
+            jsonLength += new Gson().toJson(homeIotEntity).getBytes().length;
+            myLength1 += codecUtil.encode(homeIotEntity).length;
+            myLength2 += codecUtil.encode2(homeIotEntity).length;
+        }
+        System.out.println("|" + myLength1 + "\t|" + myLength2 + "\t|" + protobufLength + "\t|" + jsonLength);
+    }
 }

@@ -156,7 +156,13 @@ step means that how often the baseLine object is changed.
 |-----| ----------- | ------| ------|
 |121064130	|130036072	|143080950	|324611758
 
-2. only with baseLine compression config
+2. only with double compression config (level: 4)
+
+| my1 |  my2 | protobuf | json |
+|-----| ----------- | ------| ------|
+|44941135	|41166468	|143080950	|324611758
+
+3. only with baseLine compression config
 
 | step  | my1 |  my2 | protobuf | json |
 -----|-----| ----------- | ------| ------|
@@ -191,7 +197,7 @@ step means that how often the baseLine object is changed.
 |950	|103922755	|110203036	|143080950	|324611758
 |1000	|104101006	|110397522	|143080950	|324611758
 
-3. with baseLine and double compression(accuracy level: 4)
+4. with baseLine and double compression(level: 4)
 
 | step  | my1 |  my2 | protobuf | json |
 -----|-----| ----------- | ------| ------|
