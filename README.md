@@ -150,7 +150,13 @@ now just half of the protobuf size.
 dataset: (https://www.kaggle.com/datasets/taranvee/smart-home-dataset-with-weather-information)  
 step means that how often the baseLine object is changed.
 
-1. only with baseLine compression config
+1. with default config
+
+| my1 |  my2 | protobuf | json |
+|-----| ----------- | ------| ------|
+|121064130	|130036072	|143080950	|324611758
+
+2. only with baseLine compression config
 
 | step  | my1 |  my2 | protobuf | json |
 -----|-----| ----------- | ------| ------|
@@ -185,7 +191,7 @@ step means that how often the baseLine object is changed.
 |950	|103922755	|110203036	|143080950	|324611758
 |1000	|104101006	|110397522	|143080950	|324611758
 
-2. with baseLine and double compression(accuracy level: 4)
+3. with baseLine and double compression(accuracy level: 4)
 
 | step  | my1 |  my2 | protobuf | json |
 -----|-----| ----------- | ------| ------|
