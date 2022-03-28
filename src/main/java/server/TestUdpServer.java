@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import util.CodecUtil;
 
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * @author 13090
@@ -26,6 +27,8 @@ public class TestUdpServer {
     public static void main(String[] args) throws InterruptedException {
         run();
     }
+
+    public static AtomicLong counts = new AtomicLong(0);
 
     static EventLoopGroup group = new NioEventLoopGroup(threads);
 

@@ -8,6 +8,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.socket.DatagramPacket;
 import lombok.extern.slf4j.Slf4j;
+import server.TestUdpServer;
 import util.CodecUtil;
 import util.ProtocolConfig;
 import util.ServerStoreConfig;
@@ -80,6 +81,7 @@ public class ShakeHandHeaderHandler implements HeaderHandler {
             DatagramPacket data = new DatagramPacket(ShakeHandHeader.getShakeHandHeader(ctx.channel()), packet.sender());
             ctx.writeAndFlush(data);
             log.info(new Date() + ":server shake hand success");
+            TestUdpServer.counts.incrementAndGet();
         } else {
             isShakeHand.set(true);
             log.info(new Date() + ":client shake hand success");

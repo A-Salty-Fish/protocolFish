@@ -18,6 +18,7 @@ import util.CodecUtil;
 import util.ProtocolConfig;
 
 import java.net.InetSocketAddress;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * @author 13090
@@ -39,6 +40,8 @@ public class TestUdpClient {
     static EventLoopGroup group;
 
     static Channel channel;
+
+    public static AtomicLong counts = new AtomicLong(0);
 
     public static void main(String[] args) throws InterruptedException {
         run();
