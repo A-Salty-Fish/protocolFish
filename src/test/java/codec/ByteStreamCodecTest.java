@@ -1,5 +1,6 @@
 package codec;
 
+import com.google.gson.Gson;
 import demo.TestEntity;
 import org.junit.Before;
 import org.junit.Test;
@@ -26,5 +27,13 @@ public class ByteStreamCodecTest {
         System.out.println(bytes.length);
     }
 
-
+    @Test
+    public void testDecode() throws Exception {
+        TestEntity testEntity = TestEntity.getRandomTestEntity();
+        System.out.println(new Gson().toJson(testEntity));
+        ByteStreamCodec byteStreamCodec = new ByteStreamCodec();
+        byte[] bytes = byteStreamCodec.encode(testEntity);
+        TestEntity testEntity1 = byteStreamCodec.decode(bytes, TestEntity.class);
+        System.out.println(new Gson().toJson(testEntity1));
+    }
 }

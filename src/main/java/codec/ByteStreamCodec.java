@@ -4,6 +4,7 @@ import handler.header.PlainBodyHeader;
 import lombok.extern.slf4j.Slf4j;
 import util.*;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -100,11 +101,11 @@ public class ByteStreamCodec implements Codec{
         } else {
             for (Field field : constantLengthFields) {
                 field.setAccessible(true);
-                encodeWithOutBaseLine3(out, field.get(obj));
+                encodeWithOutBaseLine(out, field.get(obj));
             }
             for (Field field : variableLengthFields) {
                 field.setAccessible(true);
-                encodeWithOutBaseLine3(out, field.get(obj));
+                encodeWithOutBaseLine(out, field.get(obj));
             }
         }
         return out.toByteArray();
@@ -132,7 +133,7 @@ public class ByteStreamCodec implements Codec{
         }
     }
 
-    public ByteArrayOutputStream encodeWithOutBaseLine3(ByteArrayOutputStream out, Object obj) throws Exception {
+    public ByteArrayOutputStream encodeWithOutBaseLine(ByteArrayOutputStream out, Object obj) throws Exception {
         Class<?> clazz = obj.getClass();
         if (clazz == Integer.class) {
             return encodeInt(out, (Integer) obj);
@@ -182,7 +183,104 @@ public class ByteStreamCodec implements Codec{
 
     @Override
     public <T> T decode(byte[] bytes, Class<T> clazz) throws Exception {
-        return null;
+        List<Field> constantLengthFields = constantLengthFieldMap.get(clazz);
+        List<Field> variableLengthFields = variableLengthFieldMap.get(clazz);
+        ByteArrayInputStream in = new ByteArrayInputStream(bytes);
+        T obj = clazz.newInstance();
+        if (protocolConfig.getEnableBaseLineCompression()) {
+            for (Field field : constantLengthFields) {
+                field.setAccessible(true);
+                decodeWithBaseLine(in, field, obj, field.get(protocolConfig.getBaseLine()));
+            }
+            for (Field field : variableLengthFields) {
+                field.setAccessible(true);
+                decodeWithBaseLine(in, field, obj, field.get(protocolConfig.getBaseLine()));
+            }
+        } else {
+            for (Field field : constantLengthFields) {
+                field.setAccessible(true);
+                decodeWithoutBaseLine(in, field, obj);
+            }
+            for (Field field : variableLengthFields) {
+                field.setAccessible(true);
+                decodeWithoutBaseLine(in, field, obj);
+            }
+        }
+        return obj;
+    }
+
+    public ByteArrayInputStream decodeWithBaseLine(ByteArrayInputStream in, Field field, Object obj, Object baseLineObj) throws Exception {
+        Class<?> fieldType = field.getType();
+        if (fieldType == Integer.class || fieldType == int.class) {
+            field.set(obj, decodeInt(in) ^ (Integer) baseLineObj);
+        } else if (fieldType == Long.class || fieldType == long.class) {
+            field.set(obj, decodeLong(in) ^ (Long) baseLineObj);
+        } else if (fieldType == Double.class || fieldType == double.class) {
+            long doubleL = decodeLong(in);
+            double baseLineDouble = (Double) baseLineObj;
+            if (protocolConfig.getEnableDoubleCompression()) {
+                field.set(obj, deCompressDoubleFromLong(doubleL ^ compressDoubleToLong(baseLineDouble)));
+            } else {
+                field.set(obj, Double.longBitsToDouble(doubleL ^ Double.doubleToLongBits(baseLineDouble)));
+            }
+        } else if (fieldType == String.class) {
+            field.set(obj, decodeString(in));
+        } else {
+            throw new Exception("type not support");
+        }
+        return in;
+    }
+
+    public ByteArrayInputStream decodeWithoutBaseLine(ByteArrayInputStream in, Field field, Object obj) throws Exception {
+        Class<?> fieldType = field.getType();
+        if (fieldType == Integer.class || fieldType == int.class) {
+            field.set(obj, decodeInt(in));
+        } else if (fieldType == Long.class || fieldType == long.class) {
+            field.set(obj, decodeLong(in));
+        } else if (fieldType == Double.class || fieldType == double.class) {
+            long doubleL = decodeLong(in);
+            if (protocolConfig.getEnableDoubleCompression()) {
+                field.set(obj, deCompressDoubleFromLong(doubleL));
+            } else {
+                field.set(obj, Double.longBitsToDouble(doubleL));
+            }
+        } else if (fieldType == String.class) {
+            field.set(obj, decodeString(in));
+        } else {
+            throw new Exception("type not support");
+        }
+        return in;
+    }
+
+    public String decodeString(ByteArrayInputStream in) throws Exception {
+        int length = decodeInt(in);
+        byte[] strBytes = new byte[length];
+        in.read(strBytes);
+        return new String(strBytes, protocolConfig.getCharset());
+    }
+
+    public int decodeInt(ByteArrayInputStream in) throws Exception {
+        int b = in.read() & 0xff;
+        int n = b & 0x7f;
+        int len = 1;
+        while (b > 0x7f) {
+            b = in.read() & 0xff;
+            n ^= (b & 0x7f) << (7 * len);
+            len++;
+        }
+        return (n >>> 1) ^ -(n & 1); // back to two's-complement
+    }
+
+    public long decodeLong(ByteArrayInputStream in) throws Exception {
+        long b = in.read() & 0xff;
+        long n = b & 0x7f;
+        int len = 1;
+        while (b > 0x7f) {
+            b = in.read() & 0xff;
+            n ^= (b & 0x7f) << (7 * len);
+            len++;
+        }
+        return (n >>> 1) ^ -(n & 1); // back to two's-complement
     }
 
     public long compressDoubleToLong(double value) {
