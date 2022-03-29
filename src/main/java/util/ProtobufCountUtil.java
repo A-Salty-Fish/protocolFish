@@ -27,6 +27,8 @@ public class ProtobufCountUtil {
             return 1;
         } else if (clazz == double.class || clazz == Double.class) {
             return 1;
+        } else if (clazz == float.class || clazz == Float.class) {
+            return 1;
         } else if (clazz == String.class) {
             return 4;
         }
@@ -39,6 +41,8 @@ public class ProtobufCountUtil {
             return getVarNumLength((Integer) field.get(obj));
         } else if (clazz == long.class || clazz == Long.class) {
             return getVarNumLength((Long) field.get(obj));
+        } else if (clazz == float.class || clazz == Float.class) {
+            return 4;
         } else if (clazz == double.class || clazz == Double.class) {
             return 8;
         } else if (clazz == String.class) {
@@ -71,16 +75,16 @@ public class ProtobufCountUtil {
         n = (n << 1) ^ (n >> 31);
         int start = pos;
         if ((n & ~0x7F) != 0) {
-            buf[pos++] = (byte)((n | 0x80) & 0xFF);
+            buf[pos++] = (byte) ((n | 0x80) & 0xFF);
             n >>>= 7;
             if (n > 0x7F) {
-                buf[pos++] = (byte)((n | 0x80) & 0xFF);
+                buf[pos++] = (byte) ((n | 0x80) & 0xFF);
                 n >>>= 7;
                 if (n > 0x7F) {
-                    buf[pos++] = (byte)((n | 0x80) & 0xFF);
+                    buf[pos++] = (byte) ((n | 0x80) & 0xFF);
                     n >>>= 7;
                     if (n > 0x7F) {
-                        buf[pos++] = (byte)((n | 0x80) & 0xFF);
+                        buf[pos++] = (byte) ((n | 0x80) & 0xFF);
                         n >>>= 7;
                     }
                 }
@@ -97,16 +101,16 @@ public class ProtobufCountUtil {
         n = (n << 1) ^ (n >> 63);
         int start = pos;
         if ((n & ~0x7F) != 0) {
-            buf[pos++] = (byte)((n | 0x80) & 0xFF);
+            buf[pos++] = (byte) ((n | 0x80) & 0xFF);
             n >>>= 7;
             if (n > 0x7F) {
-                buf[pos++] = (byte)((n | 0x80) & 0xFF);
+                buf[pos++] = (byte) ((n | 0x80) & 0xFF);
                 n >>>= 7;
                 if (n > 0x7F) {
-                    buf[pos++] = (byte)((n | 0x80) & 0xFF);
+                    buf[pos++] = (byte) ((n | 0x80) & 0xFF);
                     n >>>= 7;
                     if (n > 0x7F) {
-                        buf[pos++] = (byte)((n | 0x80) & 0xFF);
+                        buf[pos++] = (byte) ((n | 0x80) & 0xFF);
                         n >>>= 7;
                     }
                 }

@@ -36,6 +36,8 @@ public class CsvUtil {
                 field.set(object, Integer.parseInt(value));
             } else if (fieldType == long.class || fieldType == Long.class) {
                 field.set(object, Long.parseLong(value));
+            } else if (fieldType == float.class || fieldType == Float.class) {
+
             } else if (fieldType == double.class || fieldType == Double.class) {
                 field.set(object, Double.parseDouble(value));
             } else {

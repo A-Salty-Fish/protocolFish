@@ -22,6 +22,8 @@ public class CompressionRateTestUtil {
             } else {
                 if (type.equals(Double.class)) {
                     field.set(obj, ((Double) field.get(t)).doubleValue());
+                } else if (type.equals(Float.class)) {
+                   field.set(obj, ((Float) field.get(t)).floatValue());
                 } else if (type.equals(Integer.class)) {
                     field.set(obj, ((Integer) field.get(t)).intValue());
                 } else if (type.equals(Long.class)) {
@@ -45,6 +47,8 @@ public class CompressionRateTestUtil {
                 field.set(obj, random.nextInt());
             } else if (type.equals(long.class) || type.equals(Long.class)) {
                 field.set(obj, random.nextLong());
+            } else if (type.equals(float.class) || type.equals(Float.class)) {
+                field.set(obj, random.nextFloat() * random.nextInt());
             } else if (type.equals(double.class) || type.equals(Double.class)) {
                 field.set(obj, random.nextDouble() * random.nextLong());
             } else if (type.equals(String.class)) {
@@ -65,6 +69,8 @@ public class CompressionRateTestUtil {
                 field.set(obj, random.nextInt());
             } else if (type.equals(long.class) || type.equals(Long.class)) {
                 field.set(obj, random.nextLong());
+            } else if (type.equals(float.class) || type.equals(Float.class)) {
+                field.set(obj, random.nextFloat() * random.nextInt());
             } else if (type.equals(double.class) || type.equals(Double.class)) {
                 field.set(obj, random.nextDouble() * random.nextLong());
             } else if (type.equals(String.class)) {
@@ -89,6 +95,8 @@ public class CompressionRateTestUtil {
                 field.set(obj, ((Integer) field.get(t)).intValue() + random.nextInt(iStep) - iStep / 2);
             } else if (type.equals(long.class) || type.equals(Long.class)) {
                 field.set(obj, ((Long) field.get(t)).longValue() + random.nextInt(lStep) - lStep / 2);
+            } else if (type.equals(float.class) || type.equals(Float.class)) {
+                field.set(obj, ((Float) field.get(t)).floatValue() + random.nextFloat() * dStep - dStep / 2);
             } else if (type.equals(double.class) || type.equals(Double.class)) {
                 field.set(obj, ((Double) field.get(t)).doubleValue() + random.nextDouble() * dStep - dStep / 2);
             } else if (type.equals(String.class)) {
