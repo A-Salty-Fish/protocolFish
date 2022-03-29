@@ -922,7 +922,7 @@ public class CodecUtil {
         }
     }
 
-    public int decodeInt(byte[] buf) throws Exception {
+    public static int decodeInt(byte[] buf) throws Exception {
         int len = 1;
         int b = buf[0] & 0xff;
         int n = b & 0x7f;
@@ -948,7 +948,7 @@ public class CodecUtil {
         return (n >>> 1) ^ -(n & 1); // back to two's-complement
     }
 
-    public long decodeLong(byte[] buf) throws Exception {
+    public static long decodeLong(byte[] buf) throws Exception {
         int len = 1;
         long b = buf[0] & 0xff;
         long n = b & 0x7f;

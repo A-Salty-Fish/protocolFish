@@ -10,10 +10,9 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static util.CodecUtil.*;
 import static util.CodecUtil.FieldType.CONSTANT_LENGTH;
 import static util.CodecUtil.FieldType.NULLABLE_CONSTANT_LENGTH;
-import static util.CodecUtil.encodeInt;
-import static util.CodecUtil.encodeLong;
 
 /**
  * @author 13090
@@ -183,6 +182,84 @@ public class ByteArrayCodec implements Codec{
 
     @Override
     public <T> T decode(byte[] bytes, Class<T> clazz) throws Exception {
-        return null;
+        List<Field> constantLengthFields = constantLengthFieldMap.get(clazz);
+        List<Field> variableLengthFields = variableLengthFieldMap.get(clazz);
+        int offset = 0;
+        T result = clazz.newInstance();
+        for (Field field : constantLengthFields) {
+            offset += decodeConstantBytes(bytes, offset, field, result);
+        }
+        for (Field field : variableLengthFields) {
+            byte[] lengthBytes = getConstantBytes(bytes, offset);
+            offset += lengthBytes.length;
+            int length = decodeInt(lengthBytes);
+            byte[] valueBytes = new byte[length];
+            System.arraycopy(bytes, offset, valueBytes, 0, length);
+            offset += length;
+            field.set(result, new String(valueBytes, protocolConfig.getCharset()));
+        }
+        return result;
+    }
+
+    public int decodeConstantBytes(byte[] bytes, int offset, Field field, Object obj) throws Exception {
+        Class<?> fieldType = field.getType();
+        byte[] fieldBytes = getConstantBytes(bytes, offset);
+        if (protocolConfig.getEnableBaseLineCompression()) {
+            field.set(obj, decodeConstantFieldBytes(fieldBytes, fieldType, field.get(protocolConfig.getBaseLine())));
+        } else {
+            field.set(obj, decodeConstantFieldBytes(fieldBytes, fieldType));
+        }
+        return fieldBytes.length;
+    }
+
+    public byte[] getConstantBytes(byte[] bytes, int offset) throws Exception {
+        List<Byte> constantBytes = new ArrayList<>(10);
+        while ((bytes[offset] & (1 << 7)) != 0) {
+            constantBytes.add(bytes[offset++]);
+        }
+        constantBytes.add(bytes[offset]);
+        byte[] result = new byte[constantBytes.size()];
+        for (int i = 0; i < constantBytes.size(); i++) {
+            result[i] = constantBytes.get(i);
+        }
+        return result;
+    }
+
+    public Object decodeConstantFieldBytes(byte[] bytes, Class<?> clazz, Object baseLineObj) throws Exception {
+        if (clazz == int.class || clazz == Integer.class) {
+            return decodeInt(bytes) ^ (Integer) baseLineObj;
+        } else if (clazz == long.class || clazz == Long.class) {
+            return decodeLong(bytes) ^ (Long) baseLineObj;
+        } else if (clazz == double.class || clazz == Double.class) {
+            double baseLineDouble = (Double) baseLineObj;
+            long l = decodeLong(bytes);
+            if (protocolConfig.getEnableDoubleCompression()) {
+                return deCompressDoubleFromLong(l ^ compressDoubleToLong(baseLineDouble));
+            }
+            long baseLinel = Double.doubleToLongBits((Double) baseLineObj);
+            return Double.longBitsToDouble(l ^ baseLinel);
+        } else {
+            throw new Exception("type not support");
+        }
+    }
+
+    public Object decodeConstantFieldBytes(byte[] bytes, Class<?> clazz) throws Exception {
+        if (clazz == int.class || clazz == Integer.class) {
+            return decodeInt(bytes);
+        } else if (clazz == long.class || clazz == Long.class) {
+            return decodeLong(bytes);
+        } else if (clazz == double.class || clazz == Double.class) {
+            long l = decodeLong(bytes);
+            if (protocolConfig.getEnableDoubleCompression()) {
+                return deCompressDoubleFromLong(l);
+            }
+            return Double.longBitsToDouble(l);
+        } else {
+            throw new Exception("type not support");
+        }
+    }
+
+    public double deCompressDoubleFromLong(long l) {
+        return FloatDoubleCompressionUtil.deCompressDoubleFromLong(l, protocolConfig.getDoubleCompressionAccuracy());
     }
 }
