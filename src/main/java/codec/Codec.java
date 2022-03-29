@@ -4,6 +4,6 @@ public interface Codec {
 
     public byte[] encode(Object obj) throws Exception;
 
-    public Object decode(byte[] bytes) throws Exception;
+    public <T> T decode(byte[] bytes, Class<T> clazz) throws Exception;
 
 }

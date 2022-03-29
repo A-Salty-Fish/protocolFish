@@ -77,6 +77,12 @@ public class FloatDoubleCompressionUtil {
         return Math.round(value * power);
     }
 
-
+    public static Double deCompressDoubleFromLong(long value, int accuracy) {
+        if (value == Long.MAX_VALUE) {
+            return Double.MAX_VALUE;
+        }
+        int power = (int) Math.pow(10, accuracy);
+        return ((double) value) / power;
+    }
 
 }

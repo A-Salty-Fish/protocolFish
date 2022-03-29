@@ -1,5 +1,6 @@
 package codec;
 
+import com.google.gson.Gson;
 import demo.TestEntity;
 import org.junit.Before;
 import org.junit.Test;
@@ -23,5 +24,15 @@ public class BitArrayCodecTest {
         BitArrayCodec codec = new BitArrayCodec();
         byte[] bytes = codec.encode(TestEntity.getRandomTestEntity());
         System.out.println(bytes.length);
+    }
+
+    @Test
+    public void testDecode() throws Exception {
+        BitArrayCodec codec = new BitArrayCodec();
+        TestEntity testEntity = TestEntity.getRandomTestEntity();
+        System.out.println(new Gson().toJson(testEntity));
+        byte[] bytes = codec.encode(testEntity);
+        TestEntity testEntity2 = codec.decode(bytes, TestEntity.class);
+        System.out.println(new Gson().toJson(testEntity2));
     }
 }
