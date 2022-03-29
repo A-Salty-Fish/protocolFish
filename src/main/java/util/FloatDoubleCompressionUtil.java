@@ -69,4 +69,14 @@ public class FloatDoubleCompressionUtil {
         return Float.intBitsToFloat(l);
     }
 
+    public static long compressDoubleToLong(double value, int accuracy) {
+        int power = (int) Math.pow(10, accuracy);
+        if (Double.MAX_VALUE / power < value) {
+            return Long.MAX_VALUE;
+        }
+        return Math.round(value * power);
+    }
+
+
+
 }
