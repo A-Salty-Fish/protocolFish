@@ -811,15 +811,15 @@ public class CodecUtil {
         return bytes;
     }
 
-    public long getZigZag(long num) {
+    public static long getZigZag(long num) {
         return ((num >> 63) ^ (num << 1));
     }
 
-    public int getZigZag(int num) {
+    public static int getZigZag(int num) {
         return ((num >> 31) ^ (num << 1));
     }
 
-    public Byte[] encodeInt(int n) {
+    public static Byte[] encodeInt(int n) {
         Byte[] buf = new Byte[5];
         int pos = 0;
         n = getZigZag(n);
@@ -831,7 +831,7 @@ public class CodecUtil {
         return buf;
     }
 
-    public Byte[] encodeLong(long n) {
+    public static Byte[] encodeLong(long n) {
 // move sign to low-order bit, and flip others if negative
         Byte[] buf = new Byte[10];
         int pos = 0;

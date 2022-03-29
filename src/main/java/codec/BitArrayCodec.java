@@ -36,13 +36,6 @@ public class BitArrayCodec implements Codec {
 
     private static final ConcurrentHashMap<Integer, Class<?>> identityToClass = new ConcurrentHashMap<>();
 
-    public static enum FieldType {
-        CONSTANT_LENGTH,
-        VARIABLE_LENGTH,
-        NULLABLE_CONSTANT_LENGTH,
-        NULLABLE_VARIABLE_LENGTH
-    }
-
     public BitArrayCodec() {
         this.clientKey = null;
         this.protocolConfig = ProtocolConfig.defaultConfig();
