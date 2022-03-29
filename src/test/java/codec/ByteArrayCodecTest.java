@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import demo.TestEntity;
 import org.junit.Before;
 import org.junit.Test;
+import util.ProtocolConfig;
 
 /**
  * @author 13090
@@ -36,5 +37,48 @@ public class ByteArrayCodecTest {
         System.out.println(bytes.length);
         TestEntity testEntity1 =  byteArrayCodec.decode(bytes, TestEntity.class);
         System.out.println(new Gson().toJson(testEntity1));
+    }
+
+    @Test
+    public void testDecodeWithDoubleCompression() throws Exception {
+        ProtocolConfig protocolConfig = ProtocolConfig.defaultConfig();
+        protocolConfig.setEnableDoubleCompression(true);
+        protocolConfig.setDoubleCompressionAccuracy(4);
+        TestEntity testEntity = TestEntity.getRandomTestEntity(1024.0);
+        System.out.println(new Gson().toJson(testEntity));
+        ByteArrayCodec codec = new ByteArrayCodec(protocolConfig);
+        byte[] bytes = codec.encode(testEntity);
+        TestEntity testEntity2 = codec.decode(bytes, TestEntity.class);
+        System.out.println(new Gson().toJson(testEntity2));
+    }
+
+    @Test
+    public void testDecodeWithBaseLineCompression() throws Exception {
+        ProtocolConfig protocolConfig = ProtocolConfig.defaultConfig();
+        TestEntity testEntity = TestEntity.getRandomTestEntity(1024.0);
+        protocolConfig.setEnableBaseLineCompression(true);
+        protocolConfig.setBaseLine(testEntity);
+        TestEntity testEntity1 = TestEntity.getNextNearRandomTestEntity(testEntity);
+        System.out.println(new Gson().toJson(testEntity1));
+        ByteArrayCodec codec = new ByteArrayCodec(protocolConfig);
+        byte[] bytes = codec.encode(testEntity1);
+        TestEntity testEntity2 = codec.decode(bytes, TestEntity.class);
+        System.out.println(new Gson().toJson(testEntity2));
+    }
+
+    @Test
+    public void testDecodeWithBaseLineAndDoubleCompression() throws Exception {
+        ProtocolConfig protocolConfig = ProtocolConfig.defaultConfig();
+        protocolConfig.setEnableDoubleCompression(true);
+        protocolConfig.setDoubleCompressionAccuracy(4);
+        TestEntity testEntity = TestEntity.getRandomTestEntity(1024.0);
+        protocolConfig.setEnableBaseLineCompression(true);
+        protocolConfig.setBaseLine(testEntity);
+        TestEntity testEntity1 = TestEntity.getNextNearRandomTestEntity(testEntity);
+        System.out.println(new Gson().toJson(testEntity1));
+        ByteArrayCodec codec = new ByteArrayCodec(protocolConfig);
+        byte[] bytes = codec.encode(testEntity1);
+        TestEntity testEntity2 = codec.decode(bytes, TestEntity.class);
+        System.out.println(new Gson().toJson(testEntity2));
     }
 }
