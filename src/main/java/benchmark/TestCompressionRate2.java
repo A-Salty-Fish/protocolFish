@@ -227,4 +227,6 @@ public class TestCompressionRate2 {
         }
         System.out.println("|" + myLength1 + "\t|" + myLength2 + "\t|" + protobufLength + "\t|" + jsonLength);
     }
+
+
 }
